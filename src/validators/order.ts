@@ -8,7 +8,7 @@ export const orderItemSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  orderId: z.string().min(1, "orderId es obligatorio"),
+  orderId: z.string().min(1, "orderId es obligatorio").optional(),
   buyerId: z.string().min(1, "buyerId es obligatorio"),
   items: z.array(orderItemSchema).min(1, "La orden debe tener al menos un item"),
   status: z.string().optional(),

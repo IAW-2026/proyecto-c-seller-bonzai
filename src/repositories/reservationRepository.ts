@@ -1,12 +1,13 @@
 import { prisma } from "../lib/prisma";
 import type { Reservation, Prisma } from "@prisma/client";
+import { ReservationStatus } from "@prisma/client";
 
 export async function createReservation(data: {
   productId: string;
   buyerId: string;
   quantity: number;
   orderId?: string;
-  status: string;
+  status: ReservationStatus;
   expiresAt: Date;
 }): Promise<Reservation> {
   return prisma.reservation.create({ data });
@@ -31,7 +32,7 @@ export async function createReservationWithStockDecrement(
         buyerId,
         quantity,
         orderId,
-        status: "ACTIVE",
+        status: "ACTIVE" as ReservationStatus,
         expiresAt,
       },
     });
@@ -42,10 +43,20 @@ export async function findReservationById(id: string): Promise<Reservation | nul
   return prisma.reservation.findUnique({ where: { id } });
 }
 
+export async function findActiveReservationByProductAndBuyer(productId: string, buyerId: string): Promise<Reservation | null> {
+  return prisma.reservation.findFirst({
+    where: {
+      productId,
+      buyerId,
+      status: ReservationStatus.ACTIVE,
+    },
+  });
+}
+
 export async function cancelReservation(id: string): Promise<Reservation> {
   return prisma.reservation.update({
     where: { id },
-    data: { status: "CANCELLED" },
+    data: { status: "CANCELLED" as ReservationStatus },
   });
 }
 
@@ -61,7 +72,7 @@ export async function cancelReservationWithStockIncrement(id: string): Promise<R
 
     return tx.reservation.update({
       where: { id },
-      data: { status: "CANCELLED" },
+      data: { status: "CANCELLED" as ReservationStatus },
     });
   });
 }
@@ -69,7 +80,7 @@ export async function cancelReservationWithStockIncrement(id: string): Promise<R
 export async function findExpiredActiveReservations(): Promise<Reservation[]> {
   return prisma.reservation.findMany({
     where: {
-      status: "ACTIVE",
+      status: "ACTIVE" as ReservationStatus,
       expiresAt: { lt: new Date() },
     },
   });
@@ -78,7 +89,7 @@ export async function findExpiredActiveReservations(): Promise<Reservation[]> {
 export async function consumeReservation(id: string): Promise<Reservation> {
   return prisma.reservation.update({
     where: { id },
-    data: { status: "COMPLETED" },
+    data: { status: "COMPLETED" as ReservationStatus },
   });
 }
 

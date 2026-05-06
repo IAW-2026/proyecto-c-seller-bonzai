@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import type { Order, OrderItem } from "@prisma/client";
+import type { Order, OrderItem, OrderStatus } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 export type OrderWithItems = Order & { items: OrderItem[] };
@@ -20,7 +20,7 @@ export async function createOrder(data: Prisma.OrderCreateInput): Promise<Order>
   return prisma.order.create({ data });
 }
 
-export async function updateOrderStatus(id: string, status: string): Promise<Order> {
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
   return prisma.order.update({
     where: { id },
     data: { status },
@@ -34,6 +34,6 @@ export async function confirmPayment(
 ): Promise<Order> {
   return prisma.order.update({
     where: { id },
-    data: { status: "PAID", transactionId, paidAt },
+    data: { status: "PAID" as OrderStatus, transactionId, paidAt },
   });
 }

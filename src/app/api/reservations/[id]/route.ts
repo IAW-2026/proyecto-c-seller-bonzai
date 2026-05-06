@@ -10,7 +10,7 @@ export async function DELETE(
 
     const result = await reservationService.cancelReservation(id);
 
-    if (result) {
+    if (!result.success) {
       return NextResponse.json(
         { error: result.error, message: result.message },
         { status: result.status }

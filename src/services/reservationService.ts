@@ -1,11 +1,16 @@
 import * as productRepo from "../repositories/productRepository";
 import * as reservationRepo from "../repositories/reservationRepository";
+import { ReservationStatus } from "@prisma/client";
 
 export async function createReservation(productId: string, quantity: number, orderId: string, buyerId: string) {
   const product = await productRepo.findProductById(productId);
 
   if (!product) {
     return { success: false, error: "PRODUCT_NOT_FOUND", message: "El producto no existe.", status: 404 };
+  }
+
+  if (!product.isActive) {
+    return { success: false, error: "PRODUCT_INACTIVE", message: "El producto no está disponible.", status: 409 };
   }
 
   if (product.stock <= 0) {
@@ -41,11 +46,13 @@ export async function cancelReservation(reservationId: string) {
     return { success: false, error: "RESERVATION_NOT_FOUND", message: "La reserva no existe.", status: 404 };
   }
 
-  if (reservation.status !== "ACTIVE") {
+  if (reservation.status !== ReservationStatus.ACTIVE) {
     return { success: false, error: "RESERVATION_ALREADY_FINALIZED", message: "La reserva ya fue consumida, cancelada o expirada.", status: 409 };
   }
 
   await reservationRepo.cancelReservationWithStockIncrement(reservationId);
+
+  return { success: true };
 }
 
 export async function releaseExpiredReservations() {

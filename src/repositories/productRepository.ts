@@ -5,9 +5,9 @@ export async function findProductById(id: string): Promise<Product | null> {
   return prisma.product.findUnique({ where: { id } });
 }
 
-export async function findProductBySellerId(sellerId: string, active = true): Promise<Product[]> {
+export async function findProductBySellerId(sellerId: string, isActive = true): Promise<Product[]> {
   return prisma.product.findMany({
-    where: { sellerId, active },
+    where: { sellerId, isActive },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -23,7 +23,7 @@ export async function updateProduct(id: string, data: Prisma.ProductUpdateInput)
 export async function deactivateProduct(id: string): Promise<Product> {
   return prisma.product.update({
     where: { id },
-    data: { active: false },
+    data: { isActive: false },
   });
 }
 

@@ -7,6 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
 model SellerProfile {
   id        String   @id @default(cuid())
   clerkId   String   @unique
@@ -30,43 +43,47 @@ model Product {
   description String?
   price       Float
   stock       Int
-  active      Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  imageUrl    String?
+  isFragile   Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   category Category? @relation(fields: [categoryId], references: [id])
 }
 
 model Order {
-  id            String   @id
+  id            String      @id @default(cuid())
   buyerId       String
   sellerId      String
-  status        String
+  status        OrderStatus
   total         Float
   transactionId String?
+  trackingId    String?
   paidAt        DateTime?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime    @default(now())
 
   items OrderItem[]
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
-  orderId   String
-  productId String
-  name      String
-  quantity  Int
-  price     Float
+  id          String @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  unitPrice   Float
+  quantity    Int
+  subtotal    Float
 
   order Order @relation(fields: [orderId], references: [id])
 }
 
 model Reservation {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   productId String
   buyerId   String
   quantity  Int
   orderId   String?
-  status    String
+  status    ReservationStatus
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime          @default(now())
 }

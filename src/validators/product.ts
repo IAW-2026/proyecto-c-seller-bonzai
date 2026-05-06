@@ -5,8 +5,10 @@ export const createProductSchema = z.object({
   description: z.string().optional(),
   price: z.number().positive("price debe ser mayor a cero"),
   stock: z.number().int().nonnegative("stock no puede ser negativo"),
-  sellerId: z.string().min(1, "sellerId es obligatorio"),
+  sellerId: z.string().min(1).optional(),
   categoryId: z.string().optional(),
+  imageUrl: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
+  isFragile: z.boolean().optional(),
 });
 
 export const updateProductSchema = z.object({
@@ -15,6 +17,8 @@ export const updateProductSchema = z.object({
   price: z.number().positive().optional(),
   stock: z.number().int().nonnegative().optional(),
   categoryId: z.string().optional(),
+  imageUrl: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
+  isFragile: z.boolean().optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;

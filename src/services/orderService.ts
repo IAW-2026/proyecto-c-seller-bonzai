@@ -1,15 +1,22 @@
 import * as orderRepo from "../repositories/orderRepository";
 import * as productRepo from "../repositories/productRepository";
+import * as reservationRepo from "../repositories/reservationRepository";
 import type { Prisma } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 
-export async function createOrder(orderId: string, buyerId: string, items: { productId: string; name: string; quantity: number; price: number }[], status?: string) {
-  const existing = await orderRepo.findOrderById(orderId);
-  if (existing) {
-    return { success: false, error: "ORDER_ALREADY_EXISTS", message: "La orden ya fue registrada previamente en el contexto del seller.", status: 409 };
+export async function createOrder(orderId: string | undefined, buyerId: string, items: { productId: string; name: string; quantity: number; price: number }[], status?: string) {
+  const finalOrderId = orderId?.trim() || crypto.randomUUID();
+
+  if (orderId) {
+    const existing = await orderRepo.findOrderById(finalOrderId);
+    if (existing) {
+      return { success: false, error: "ORDER_ALREADY_EXISTS", message: "La orden ya fue registrada previamente en el contexto del seller.", status: 409 };
+    }
   }
 
   let sellerId: string | null = null;
   const orderItems: Prisma.OrderItemCreateManyOrderInput[] = [];
+  const reservationIds: string[] = [];
 
   for (const item of items) {
     const product = await productRepo.findProductById(item.productId);
@@ -19,14 +26,33 @@ export async function createOrder(orderId: string, buyerId: string, items: { pro
 
     if (!sellerId) {
       sellerId = product.sellerId;
+    } else if (product.sellerId !== sellerId) {
+      return {
+        success: false,
+        error: "MIXED_SELLER_ITEMS",
+        message: "Todos los items de la orden deben pertenecer al mismo vendedor.",
+        status: 400,
+      };
     }
+
+    if (!product.isActive) {
+      return { success: false, error: "PRODUCT_INACTIVE", message: `El producto ${item.productId} no está disponible.`, status: 409 };
+    }
+
+    const subtotal = item.price * item.quantity;
 
     orderItems.push({
       productId: item.productId,
-      name: item.name,
+      productName: item.name,
       quantity: item.quantity,
-      price: item.price,
+      unitPrice: item.price,
+      subtotal,
     });
+
+    const reservation = await reservationRepo.findActiveReservationByProductAndBuyer(item.productId, buyerId);
+    if (reservation) {
+      reservationIds.push(reservation.id);
+    }
   }
 
   if (!sellerId) {
@@ -34,19 +60,24 @@ export async function createOrder(orderId: string, buyerId: string, items: { pro
   }
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PAID;
 
   await orderRepo.createOrder({
-    id: orderId,
+    id: finalOrderId,
     buyerId,
     sellerId,
-    status: status || "PAID",
+    status: normalizedStatus,
     total,
     items: {
       create: orderItems,
     },
   });
 
-  return { success: true, status: 201 };
+  for (const reservationId of reservationIds) {
+    await reservationRepo.consumeReservation(reservationId);
+  }
+
+  return { success: true, orderId: finalOrderId, status: 201 };
 }
 
 export async function cancelOrder(orderId: string) {
@@ -56,11 +87,11 @@ export async function cancelOrder(orderId: string) {
     return { success: false, error: "ORDER_NOT_FOUND", message: "La orden indicada no existe en el contexto del seller.", status: 404 };
   }
 
-  if (order.status === "CANCELLED") {
+  if (order.status === OrderStatus.CANCELLED) {
     return { success: false, error: "ORDER_ALREADY_CANCELLED", message: "La orden ya fue cancelada previamente.", status: 409 };
   }
 
-  await orderRepo.updateOrderStatus(orderId, "CANCELLED");
+  await orderRepo.updateOrderStatus(orderId, OrderStatus.CANCELLED);
 
   return { success: true };
 }
@@ -72,8 +103,12 @@ export async function confirmPayment(orderId: string, transactionId: string, pai
     return { success: false, error: "ORDER_NOT_FOUND", message: "No existe una orden con ese orderId.", status: 404 };
   }
 
-  if (order.status === "CANCELLED") {
+  if (order.status === OrderStatus.CANCELLED) {
     return { success: false, error: "ORDER_CANCELLED", message: "La orden fue cancelada y no puede recibir pago.", status: 409 };
+  }
+
+  if (order.status === OrderStatus.PAID) {
+    return { success: false, error: "PAYMENT_ALREADY_CONFIRMED", message: "El pago ya fue confirmado previamente.", status: 409 };
   }
 
   const paidAtDate = paidAt ? new Date(paidAt) : new Date();
@@ -83,7 +118,7 @@ export async function confirmPayment(orderId: string, transactionId: string, pai
   return {
     success: true,
     orderId,
-    newStatus: "PAID",
+    newStatus: OrderStatus.PAID,
   };
 }
 
@@ -96,8 +131,13 @@ export async function getOrdersByBuyer(buyerId: string) {
       status: order.status,
       total: order.total,
       createdAt: order.createdAt.toISOString(),
-      items: order.items || [],
-      trackingId: null,
+      items: order.items.map((item) => ({
+        productId: item.productId,
+        name: item.productName,
+        quantity: item.quantity,
+        price: item.unitPrice,
+      })),
+      trackingId: order.trackingId,
     })),
   };
 }

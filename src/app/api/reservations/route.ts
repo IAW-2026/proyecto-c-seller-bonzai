@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "INVALID_REQUEST", message: "La cantidad debe ser mayor a cero y cartId es obligatorio." },
+        { error: "INVALID_REQUEST", message: "La cantidad debe ser mayor a cero y orderId es obligatorio." },
         { status: 400 }
       );
     }

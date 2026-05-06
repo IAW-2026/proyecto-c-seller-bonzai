@@ -25,7 +25,10 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    return NextResponse.json(
+      { success: true, orderId: result.orderId },
+      { status: 201 }
+    );
   } catch {
     return NextResponse.json(
       { error: "SERVER_ERROR" },
