@@ -32,7 +32,7 @@ export async function createReservationWithStockDecrement(
         buyerId,
         quantity,
         orderId,
-        status: "ACTIVE" as ReservationStatus,
+        status: ReservationStatus.ACTIVE,
         expiresAt,
       },
     });
@@ -56,7 +56,7 @@ export async function findActiveReservationByProductAndBuyer(productId: string, 
 export async function cancelReservation(id: string): Promise<Reservation> {
   return prisma.reservation.update({
     where: { id },
-    data: { status: "CANCELLED" as ReservationStatus },
+    data: { status: ReservationStatus.CANCELLED },
   });
 }
 
@@ -72,7 +72,7 @@ export async function cancelReservationWithStockIncrement(id: string): Promise<R
 
     return tx.reservation.update({
       where: { id },
-      data: { status: "CANCELLED" as ReservationStatus },
+      data: { status: ReservationStatus.CANCELLED },
     });
   });
 }
@@ -80,7 +80,7 @@ export async function cancelReservationWithStockIncrement(id: string): Promise<R
 export async function findExpiredActiveReservations(): Promise<Reservation[]> {
   return prisma.reservation.findMany({
     where: {
-      status: "ACTIVE" as ReservationStatus,
+      status: ReservationStatus.ACTIVE,
       expiresAt: { lt: new Date() },
     },
   });
@@ -89,7 +89,7 @@ export async function findExpiredActiveReservations(): Promise<Reservation[]> {
 export async function consumeReservation(id: string): Promise<Reservation> {
   return prisma.reservation.update({
     where: { id },
-    data: { status: "COMPLETED" as ReservationStatus },
+    data: { status: ReservationStatus.COMPLETED },
   });
 }
 
