@@ -51,8 +51,6 @@ model Product {
 
   category Category? @relation(fields: [categoryId], references: [id])
 
-  @@index([sellerId])
-  @@index([isActive])
 }
 
 model Order {
@@ -67,10 +65,6 @@ model Order {
   createdAt     DateTime    @default(now())
 
   items OrderItem[]
-
-  @@index([buyerId])
-  @@index([sellerId])
-  @@index([status])
 }
 
 model OrderItem {
@@ -96,6 +90,4 @@ model Reservation {
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
-  @@index([productId, buyerId, status])
-  @@index([status, expiresAt])
 }
