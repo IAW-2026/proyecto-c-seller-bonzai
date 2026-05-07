@@ -16,7 +16,14 @@ export async function POST(req: Request) {
 
     const { productId, quantity, orderId, buyerId } = parsed.data;
 
-    const result = await reservationService.createReservation(productId, quantity, orderId, buyerId || "unknown");
+    if (!buyerId) {
+      return NextResponse.json(
+        { error: "INVALID_REQUEST", message: "buyerId es obligatorio." },
+        { status: 400 }
+      );
+    }
+
+    const result = await reservationService.createReservation(productId, quantity, orderId, buyerId);
 
     if (!result.success) {
       return NextResponse.json(

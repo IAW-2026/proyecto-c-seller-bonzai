@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
+const ALLOWED_ROLES = ["seller", "seller_admin"];
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -16,6 +18,13 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "INVALID_REQUEST", message: "El rol es obligatorio." },
         { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_ROLES.includes(role)) {
+      return NextResponse.json(
+        { error: "INVALID_ROLE", message: "El rol solicitado no es válido." },
+        { status: 403 }
       );
     }
 

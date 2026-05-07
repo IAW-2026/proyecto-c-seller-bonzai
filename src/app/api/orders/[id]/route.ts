@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cancelOrderSchema } from "../../../../validators";
 import * as orderService from "../../../../services/orderService";
 
 export async function DELETE(
@@ -8,16 +7,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params;
-
-    const body = await req.json();
-    const parsed = cancelOrderSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "INVALID_REQUEST", message: "Faltan campos obligatorios o el status es inválido." },
-        { status: 400 }
-      );
-    }
 
     const result = await orderService.cancelOrder(id);
 

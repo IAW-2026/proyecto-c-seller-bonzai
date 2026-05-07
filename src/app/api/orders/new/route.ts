@@ -4,6 +4,14 @@ import * as orderService from "../../../../services/orderService";
 
 export async function POST(req: Request) {
   try {
+    const serviceKey = req.headers.get("x-service-key");
+    if (serviceKey !== process.env.SERVICE_API_KEY) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: "Acceso no autorizado." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const parsed = createOrderSchema.safeParse(body);
 

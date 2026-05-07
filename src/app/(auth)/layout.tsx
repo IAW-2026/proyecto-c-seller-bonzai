@@ -1,11 +1,20 @@
-import { ClerkProvider } from "@clerk/nextjs";
+import Link from "next/link";
+import styles from "./auth.module.css";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md">{children}</div>
+    <div className={styles.layout}>
+      <div className={styles.wrapper}>
+        <div className={styles.logoRow}>
+          <Link href="/" className={styles.logo}>
+            <div className={styles.logoIcon}>B</div>
+            <span className={styles.logoText}>Bonzai</span>
+          </Link>
+        </div>
+        <div className={styles.card}>
+          {children}
+        </div>
       </div>
-    </ClerkProvider>
+    </div>
   );
 }

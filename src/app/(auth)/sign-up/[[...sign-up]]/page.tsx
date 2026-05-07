@@ -1,11 +1,5 @@
-import { SignUp } from "@clerk/nextjs";
+import { EmailCheckSignUp } from "../../../../frontend/components/auth/EmailCheckSignUp";
 
 export default function SignUpPage() {
-  return (
-    <SignUp
-      routing="hash"
-      signInUrl="/sign-in"
-      forceRedirectUrl="/activate-seller"
-    />
-  );
+  return <EmailCheckSignUp />;
 }

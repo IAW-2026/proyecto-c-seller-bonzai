@@ -1,7 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/api/health", "/api/user/activate-role", "/sign-in", "/sign-up", "/webhooks", "/activate-seller"];
+const publicRoutes = ["/", "/api/health", "/api/auth/check-email", "/api/user/activate-role", "/sign-in", "/sign-up", "/webhooks", "/activate-seller"];
 
 async function getUserRoles(userId: string): Promise<string[]> {
   const { clerkClient } = await import("@clerk/nextjs/server");
@@ -48,10 +48,7 @@ export default clerkMiddleware(async (auth, req) => {
       );
     }
   } else if (pathname.startsWith("/api/")) {
-    if (process.env.NODE_ENV === "development") {
-      return NextResponse.next();
-    }
-    if (!roles.includes("seller")) {
+    if (!roles.includes("seller") && !roles.includes("seller_admin") && !roles.includes("super_admin")) {
       return NextResponse.json(
         { error: "FORBIDDEN", message: "Requiere rol de vendedor." },
         { status: 403 }

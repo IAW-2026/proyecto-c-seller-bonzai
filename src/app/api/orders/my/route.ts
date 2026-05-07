@@ -3,6 +3,14 @@ import * as orderService from "../../../../services/orderService";
 
 export async function GET(req: Request) {
   try {
+    const serviceKey = req.headers.get("x-service-key");
+    if (serviceKey !== process.env.SERVICE_API_KEY) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: "Acceso no autorizado." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const buyerId = searchParams.get("buyerId");
 

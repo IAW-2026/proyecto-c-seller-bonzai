@@ -1,23 +1,8 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import { redirect } from "next/navigation";
-
-async function ensureSellerProfile(userId: string, email: string) {
-  let profile = await prisma.sellerProfile.findUnique({ where: { clerkId: userId } });
-
-  if (!profile) {
-    profile = await prisma.sellerProfile.create({
-      data: {
-        clerkId: userId,
-        email,
-        approved: false,
-        suspended: false,
-      },
-    });
-  }
-
-  return profile;
-}
+import { Package, BarChart3, ArrowUpRight } from "lucide-react";
+import styles from "./page.module.css";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -25,25 +10,36 @@ export default async function DashboardPage() {
 
   if (!userId || !user) redirect("/sign-in");
 
-  await ensureSellerProfile(userId, user.emailAddresses[0]?.emailAddress || "");
-
   return (
-    <main className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Panel de Vendedor</h1>
-      <p className="text-gray-600 mb-6">
-        Bienvenido, {user.firstName || user.emailAddresses[0]?.emailAddress}
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border rounded-lg p-6 bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">Mis Productos</h2>
-          <p className="text-gray-500">Gestiona tu catálogo y stock.</p>
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.title}>
+          Merchant <span className={styles.italic}>Overview</span>
+        </h1>
+        <p className={styles.welcome}>
+          Welcome back, {user.firstName || "Curator"}. Here is your current standing.
+        </p>
+      </header>
+
+      <div className={styles.grid}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.iconWrapper}><Package size={18} /></div>
+            <ArrowUpRight size={14} className={styles.arrow} />
+          </div>
+          <h2 className={styles.cardTitle}>Inventory</h2>
+          <p className={styles.cardDesc}>Manage your botanical collection and digital assets.</p>
         </div>
-        <div className="border rounded-lg p-6 bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">Órdenes</h2>
-          <p className="text-gray-500">Revisa y procesa pedidos entrantes.</p>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.iconWrapper}><BarChart3 size={18} /></div>
+            <ArrowUpRight size={14} className={styles.arrow} />
+          </div>
+          <h2 className={styles.cardTitle}>Performance</h2>
+          <p className={styles.cardDesc}>Deep dive into your sales and revenue growth.</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

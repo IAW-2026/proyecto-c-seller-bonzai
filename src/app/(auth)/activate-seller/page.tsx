@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
+import styles from "./page.module.css";
 
 export default function ActivateSellerPage() {
-  const { isLoaded, userId, getToken } = useAuth();
+  const { isLoaded, userId } = useAuth();
   const { user } = useUser();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,25 +46,36 @@ export default function ActivateSellerPage() {
     }
   };
 
-  if (!isLoaded) return <p>Cargando...</p>;
+  if (!isLoaded) {
+    return (
+      <div className={styles.spinner}>
+        <div className={styles.spinnerCircle} />
+      </div>
+    );
+  }
 
   return (
-    <div className="text-center">
-      <h1 className="text-2xl font-bold mb-2">Habilitar acceso como Seller</h1>
-      <p className="text-gray-600 mb-6">
-        Ya existe una cuenta asociada a {user?.emailAddresses[0]?.emailAddress}.
-        ¿Deseás habilitar también acceso como Vendedor?
+    <div className={styles.content}>
+      <div className={styles.iconWrapper}>
+        <svg className={styles.icon} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <h1 className={styles.title}>Habilitar acceso como Seller</h1>
+      <p className={styles.description}>
+        Ya existe una cuenta asociada a <strong className={styles.highlight}>{user?.emailAddresses[0]?.emailAddress}</strong>.
+        ¿Deseás habilitar también acceso como vendedor?
       </p>
       <button
         onClick={handleActivate}
         disabled={isLoading}
-        className="w-full rounded-md bg-green-600 px-4 py-2 text-white font-medium hover:bg-green-700 disabled:opacity-50"
+        className={styles.activateBtn}
       >
         {isLoading ? "Activando..." : "Sí, habilitar acceso"}
       </button>
       <button
         onClick={() => router.push("/sign-in")}
-        className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700"
+        className={styles.cancelBtn}
       >
         Cancelar
       </button>

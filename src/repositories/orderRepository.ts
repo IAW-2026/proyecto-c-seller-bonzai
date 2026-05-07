@@ -21,6 +21,27 @@ export async function createOrder(data: Prisma.OrderCreateInput): Promise<Order>
   return prisma.order.create({ data });
 }
 
+export async function createOrderWithReservationConsumption(
+  orderData: Prisma.OrderCreateInput,
+  reservationIds: string[],
+): Promise<Order> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.create({ data: orderData });
+
+    if (reservationIds.length > 0) {
+      await tx.reservation.updateMany({
+        where: {
+          id: { in: reservationIds },
+          status: "ACTIVE",
+        },
+        data: { status: "COMPLETED" },
+      });
+    }
+
+    return order;
+  });
+}
+
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
   return prisma.order.update({
     where: { id },

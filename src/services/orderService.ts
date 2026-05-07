@@ -60,9 +60,9 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
   }
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PAID;
+  const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PENDING;
 
-  await orderRepo.createOrder({
+  await orderRepo.createOrderWithReservationConsumption({
     id: finalOrderId,
     buyerId,
     sellerId,
@@ -71,11 +71,7 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
     items: {
       create: orderItems,
     },
-  });
-
-  for (const reservationId of reservationIds) {
-    await reservationRepo.consumeReservation(reservationId);
-  }
+  }, reservationIds);
 
   return { success: true, orderId: finalOrderId, status: 201 };
 }

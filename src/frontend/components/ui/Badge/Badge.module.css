@@ -1,0 +1,15 @@
+.badge {
+  background: #f0f0f0; /* Gris muy claro */
+  color: var(--color-text-muted);
+  border-radius: 2px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  border: none;
+}
+
+.primary {
+  background: var(--color-primary);
+  color: white;
+}

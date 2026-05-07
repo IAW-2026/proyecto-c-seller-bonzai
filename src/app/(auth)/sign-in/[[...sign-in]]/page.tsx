@@ -1,4 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
+import { clerkTheme } from "../../../../frontend/lib/clerkTheme";
 
 export default function SignInPage() {
   return (
@@ -6,6 +7,7 @@ export default function SignInPage() {
       routing="hash"
       signUpUrl="/sign-up"
       fallbackRedirectUrl="/dashboard"
+      appearance={clerkTheme}
     />
   );
 }
