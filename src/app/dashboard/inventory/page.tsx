@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Package, Layers, CircleAlert, Plus } from "lucide-react";
 import styles from "./page.module.css";
@@ -28,12 +29,20 @@ export default async function InventoryPage() {
   return (
     <div className={styles.page}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.title}>
-          Product <span className={styles.italic}>Inventory</span>
-        </h1>
-        <p className={styles.welcome}>
-          {products.length} product{products.length !== 1 ? "s" : ""} in your catalog
-        </p>
+        <div className={styles.headerRow}>
+          <div>
+            <h1 className={styles.title}>
+              Product <span className={styles.italic}>Inventory</span>
+            </h1>
+            <p className={styles.welcome}>
+              {products.length} product{products.length !== 1 ? "s" : ""} in your catalog
+            </p>
+          </div>
+          <Link href="/dashboard/inventory/new" className={styles.addBtn}>
+            <Plus size={14} />
+            New Product
+          </Link>
+        </div>
       </header>
 
       <div className={styles.stats}>
@@ -96,15 +105,15 @@ export default async function InventoryPage() {
                   </div>
                 </div>
               </div>
-              <div className={styles.tableCell}>
+              <div className={`${styles.tableCell} ${styles.cellPrice}`}>
                 <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
               </div>
-              <div className={styles.tableCell}>
+              <div className={`${styles.tableCell} ${styles.cellStock}`}>
                 <span className={`${styles.productStock} ${product.stock === 0 ? styles.stockEmpty : ""}`}>
                   {product.stock}
                 </span>
               </div>
-              <div className={styles.tableCell}>
+              <div className={`${styles.tableCell} ${styles.cellStatus}`}>
                 <span className={`${styles.badge} ${product.stock > 0 ? styles.badgeActive : styles.badgeInactive}`}>
                   {product.stock > 0 ? "Active" : "Depleted"}
                 </span>

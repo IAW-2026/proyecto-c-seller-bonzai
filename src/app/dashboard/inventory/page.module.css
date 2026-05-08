@@ -28,6 +28,43 @@
   letter-spacing: 0.02em;
 }
 
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  background: var(--color-primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .headerRow {
+    flex-direction: column;
+  }
+}
+
 /* Stats */
 .stats {
   display: grid;
@@ -146,6 +183,13 @@
   background: rgba(27, 61, 47, 0.02);
 }
 
+.cellPrice,
+.cellStock,
+.cellStatus {
+  align-self: start;
+  padding-top: 0.3rem;
+}
+
 .tableCell {
   display: flex;
   align-items: center;
@@ -210,8 +254,11 @@
 }
 
 .productStock {
-  font-size: 0.85rem;
-  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  line-height: 1;
 }
 
 .stockEmpty {
