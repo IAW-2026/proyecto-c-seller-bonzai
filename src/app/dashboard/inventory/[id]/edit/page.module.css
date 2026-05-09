@@ -1,6 +1,5 @@
 .page {
   max-width: 720px;
-  margin: 0;
 }
 
 .pageHeader {
@@ -58,6 +57,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2.5rem;
+}
+
+.fieldInput {
+  min-width: 0;
 }
 
 .field {
@@ -163,13 +166,10 @@
     font-size: 1.75rem;
   }
 
-  .row {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .title {
-    font-size: 1.75rem;
+  .fieldInput,
+  .textarea {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .actions {
@@ -179,17 +179,5 @@
 
   .cancelBtn {
     text-align: center;
-  }
-
-  .page {
-    overflow-x: hidden;
-  }
-
-  .fieldInput,
-  .textarea {
-    max-width: 100%;
-    min-width: 0;
-    width: 100%;
-    box-sizing: border-box;
   }
 }

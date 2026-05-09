@@ -82,40 +82,42 @@ export default async function ReservationsPage() {
           <p className={styles.emptyHint}>Customer reservations for your products will appear here</p>
         </div>
       ) : (
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span className={styles.tableHeaderCell}>Product</span>
-            <span className={styles.tableHeaderCell}>Qty</span>
-            <span className={styles.tableHeaderCell}>Status</span>
-            <span className={styles.tableHeaderCell}>Expires</span>
-          </div>
-          {reservations.map((reservation) => (
-            <div key={reservation.id} className={styles.tableRow}>
-              <div className={styles.tableCell}>
-                <span className={styles.productName}>
-                  {productMap.get(reservation.productId) || "Unknown Product"}
-                </span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.quantity}>{reservation.quantity}</span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={`${styles.badge} ${styles[`badge${reservation.status}`] || ""}`}>
-                  <span className={styles.badgeIcon}>{statusIcons[reservation.status]}</span>
-                  {statusLabels[reservation.status] || reservation.status}
-                </span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.expiresDate}>
-                  {new Date(reservation.expiresAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
+        <div className={styles.tableWrapper}>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span className={styles.tableHeaderCell}>Product</span>
+              <span className={styles.tableHeaderCell}>Qty</span>
+              <span className={styles.tableHeaderCell}>Status</span>
+              <span className={styles.tableHeaderCell}>Expires</span>
             </div>
-          ))}
+            {reservations.map((reservation) => (
+              <div key={reservation.id} className={styles.tableRow}>
+                <div className={styles.tableCell}>
+                  <span className={styles.productName}>
+                    {productMap.get(reservation.productId) || "Unknown Product"}
+                  </span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={styles.quantity}>{reservation.quantity}</span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={`${styles.badge} ${styles[`badge${reservation.status}`] || ""}`}>
+                    <span className={styles.badgeIcon}>{statusIcons[reservation.status]}</span>
+                    {statusLabels[reservation.status] || reservation.status}
+                  </span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={styles.expiresDate}>
+                    {new Date(reservation.expiresAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

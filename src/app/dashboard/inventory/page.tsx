@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Package, Layers, CircleAlert, Plus } from "lucide-react";
+import { Package, Layers, CircleAlert, Plus, Pencil } from "lucide-react";
 import styles from "./page.module.css";
 
 export default async function InventoryPage() {
@@ -77,49 +77,54 @@ export default async function InventoryPage() {
           <p className={styles.emptyHint}>Products you add will appear here</p>
         </div>
       ) : (
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span className={styles.tableHeaderCell}>Product</span>
-            <span className={styles.tableHeaderCell}>Price</span>
-            <span className={styles.tableHeaderCell}>Stock</span>
-            <span className={styles.tableHeaderCell}>Status</span>
-          </div>
-          {products.map((product) => (
-            <div key={product.id} className={styles.tableRow}>
-              <div className={styles.tableCell}>
-                <div className={styles.productInfo}>
-                  <div className={styles.productImage}>
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} className={styles.productImg} />
-                    ) : (
-                      <div className={styles.productImgPlaceholder}>
-                        <Package size={14} />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <span className={styles.productName}>{product.name}</span>
-                    {product.description && (
-                      <span className={styles.productDesc}>{product.description}</span>
-                    )}
+        <div className={styles.tableWrapper}>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span className={styles.tableHeaderCell}>Product</span>
+              <span className={styles.tableHeaderCell}>Price</span>
+              <span className={styles.tableHeaderCell}>Stock</span>
+              <span className={styles.tableHeaderCell}>Status</span>
+            </div>
+            {products.map((product) => (
+              <div key={product.id} className={styles.tableRow}>
+                <div className={styles.tableCell}>
+                  <div className={styles.productInfo}>
+                    <div className={styles.productImage}>
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className={styles.productImg} />
+                      ) : (
+                        <div className={styles.productImgPlaceholder}>
+                          <Package size={14} />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Link href={`/dashboard/inventory/${product.id}/edit`} className={styles.productNameLink}>
+                        <span className={styles.productName}>{product.name}</span>
+                        <Pencil size={10} className={styles.editIcon} />
+                      </Link>
+                      {product.description && (
+                        <span className={styles.productDesc}>{product.description}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <div className={`${styles.tableCell} ${styles.cellPrice}`}>
+                  <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
+                </div>
+                <div className={`${styles.tableCell} ${styles.cellStock}`}>
+                  <span className={`${styles.productStock} ${product.stock === 0 ? styles.stockEmpty : ""}`}>
+                    {product.stock}
+                  </span>
+                </div>
+                <div className={`${styles.tableCell} ${styles.cellStatus}`}>
+                  <span className={`${styles.badge} ${product.stock > 0 ? styles.badgeActive : styles.badgeInactive}`}>
+                    {product.stock > 0 ? "Active" : "Depleted"}
+                  </span>
+                </div>
               </div>
-              <div className={`${styles.tableCell} ${styles.cellPrice}`}>
-                <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
-              </div>
-              <div className={`${styles.tableCell} ${styles.cellStock}`}>
-                <span className={`${styles.productStock} ${product.stock === 0 ? styles.stockEmpty : ""}`}>
-                  {product.stock}
-                </span>
-              </div>
-              <div className={`${styles.tableCell} ${styles.cellStatus}`}>
-                <span className={`${styles.badge} ${product.stock > 0 ? styles.badgeActive : styles.badgeInactive}`}>
-                  {product.stock > 0 ? "Active" : "Depleted"}
-                </span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>

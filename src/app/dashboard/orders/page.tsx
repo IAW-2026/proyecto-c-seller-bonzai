@@ -82,44 +82,46 @@ export default async function OrdersPage() {
           <p className={styles.emptyHint}>When customers place orders, they will appear here</p>
         </div>
       ) : (
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span className={styles.tableHeaderCell}>Order</span>
-            <span className={styles.tableHeaderCell}>Items</span>
-            <span className={styles.tableHeaderCell}>Total</span>
-            <span className={styles.tableHeaderCell}>Status</span>
-            <span className={styles.tableHeaderCell}>Date</span>
-          </div>
-          {orders.map((order) => (
-            <div key={order.id} className={styles.tableRow}>
-              <div className={styles.tableCell}>
-                <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.itemCount}>
-                  {order.items.reduce((sum, i) => sum + i.quantity, 0)} item{order.items.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.orderTotal}>${order.total.toFixed(2)}</span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={`${styles.badge} ${styles[`badge${order.status}`] || ""}`}>
-                  <span className={styles.badgeIcon}>{statusIcons[order.status]}</span>
-                  {statusLabels[order.status] || order.status}
-                </span>
-              </div>
-              <div className={styles.tableCell}>
-                <span className={styles.orderDate}>
-                  {new Date(order.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
+        <div className={styles.tableWrapper}>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span className={styles.tableHeaderCell}>Order</span>
+              <span className={styles.tableHeaderCell}>Items</span>
+              <span className={styles.tableHeaderCell}>Total</span>
+              <span className={styles.tableHeaderCell}>Status</span>
+              <span className={styles.tableHeaderCell}>Date</span>
             </div>
-          ))}
+            {orders.map((order) => (
+              <div key={order.id} className={styles.tableRow}>
+                <div className={styles.tableCell}>
+                  <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={styles.itemCount}>
+                    {order.items.reduce((sum, i) => sum + i.quantity, 0)} item{order.items.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={styles.orderTotal}>${order.total.toFixed(2)}</span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={`${styles.badge} ${styles[`badge${order.status}`] || ""}`}>
+                    <span className={styles.badgeIcon}>{statusIcons[order.status]}</span>
+                    {statusLabels[order.status] || order.status}
+                  </span>
+                </div>
+                <div className={styles.tableCell}>
+                  <span className={styles.orderDate}>
+                    {new Date(order.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
