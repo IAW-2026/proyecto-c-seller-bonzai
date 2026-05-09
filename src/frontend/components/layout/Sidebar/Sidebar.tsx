@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import styles from "./Sidebar.module.css";
 
-export function Sidebar({ navItems, isOpen, onClose }: any) {
+export function Sidebar({ navItems, adminNavItems, isOpen, onClose }: any) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
@@ -38,6 +38,23 @@ export function Sidebar({ navItems, isOpen, onClose }: any) {
               {item.label}
             </button>
           ))}
+          {adminNavItems && adminNavItems.length > 0 && (
+            <>
+              <span className={styles.navLabel}>Admin</span>
+              {adminNavItems.map((item: any) => (
+                <button
+                  key={item.href}
+                  onClick={() => { router.push(item.href); onClose(); }}
+                  className={`${styles.navItem} ${pathname === item.href ? styles.navItemActive : ""}`}
+                >
+                  <svg className={styles.navIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                  </svg>
+                  {item.label}
+                </button>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className={styles.footer}>

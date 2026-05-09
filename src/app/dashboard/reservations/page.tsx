@@ -27,7 +27,7 @@ export default async function ReservationsPage() {
   let profile = await prisma.sellerProfile.findUnique({ where: { clerkId: userId } });
   if (!profile) {
     profile = await prisma.sellerProfile.create({
-      data: { clerkId: userId, email: user.emailAddresses[0]?.emailAddress || "", approved: false, suspended: false },
+      data: { clerkId: userId, email: user.emailAddresses[0]?.emailAddress || "", approved: true, suspended: false },
     });
   }
 

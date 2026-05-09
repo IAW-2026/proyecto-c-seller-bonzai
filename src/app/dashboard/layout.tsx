@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { Sidebar } from "../../frontend/components/layout/Sidebar/Sidebar";
 import styles from "./layout.module.css";
 
@@ -12,12 +13,36 @@ const navItems = [
   { label: "Reservations", href: "/dashboard/reservations", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
 ];
 
+const adminNavItems = [
+  { label: "Sellers", href: "/dashboard/admin/sellers", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
+  { label: "Products", href: "/dashboard/admin/products", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
+  { label: "Orders", href: "/dashboard/admin/orders", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
+];
+
+function useAdminRole(): boolean {
+  const { user } = useUser();
+  if (!user) return false;
+  const rawRoles = (user.publicMetadata as any)?.roles;
+  const roles: string[] = Array.isArray(rawRoles)
+    ? rawRoles
+    : rawRoles && typeof rawRoles === "object"
+      ? Object.values(rawRoles)
+      : [];
+  return roles.includes("seller_admin") || roles.includes("super_admin");
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = useAdminRole();
 
   return (
     <div className={styles.layout}>
-      <Sidebar navItems={navItems} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        navItems={navItems}
+        adminNavItems={isAdmin ? adminNavItems : undefined}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
       <div className={styles.content}>
         <header className={styles.topbar}>
           <button onClick={() => setSidebarOpen(true)} className={styles.menuBtn}>

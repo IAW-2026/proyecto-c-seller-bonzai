@@ -21,12 +21,13 @@ enum ReservationStatus {
 }
 
 model SellerProfile {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
+  id        String    @id @default(cuid())
+  clerkId   String    @unique
   email     String
-  approved  Boolean  @default(false)
-  suspended Boolean  @default(false)
-  createdAt DateTime @default(now())
+  approved  Boolean   @default(true)
+  suspended Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  products  Product[]
 }
 
 model Category {
@@ -35,22 +36,31 @@ model Category {
   products Product[]
 }
 
+enum ModerationStatus {
+  ACTIVE
+  REMOVED_INAPPROPRIATE
+  REMOVED_COUNTERFEIT
+  REMOVED_OTHER
+}
+
 model Product {
-  id          String   @id @default(cuid())
-  sellerId    String
-  categoryId  String?
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  isActive    Boolean  @default(true)
-  imageUrl    String?
-  isFragile   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String           @id @default(cuid())
+  sellerId         String
+  categoryId       String?
+  name             String
+  description      String?
+  price            Float
+  stock            Int
+  isActive         Boolean          @default(true)
+  imageUrl         String?
+  isFragile        Boolean          @default(false)
+  moderationStatus ModerationStatus @default(ACTIVE)
+  moderationNote   String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  category Category? @relation(fields: [categoryId], references: [id])
-
+  category Category?      @relation(fields: [categoryId], references: [id])
+  seller   SellerProfile  @relation(fields: [sellerId], references: [id])
 }
 
 model Order {

@@ -7,7 +7,7 @@ export async function createProduct(data: { name: string; description?: string; 
     description: data.description || "",
     price: data.price,
     stock: data.stock,
-    sellerId: data.sellerId,
+    seller: { connect: { id: data.sellerId } },
     isActive: true,
     imageUrl: data.imageUrl,
     isFragile: data.isFragile ?? false,

@@ -1,8 +1,27 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { prisma } from "../../../lib/prisma";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useState, useEffect } from "react";
 import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
 import styles from "./page.module.css";
+
+interface OrderItem {
+  id: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  subtotal: number;
+}
+
+interface Order {
+  id: string;
+  buyerId: string;
+  sellerId: string;
+  status: string;
+  total: number;
+  transactionId: string | null;
+  createdAt: string;
+  items: OrderItem[];
+}
 
 const statusIcons: Record<string, React.ReactNode> = {
   PENDING: <Clock size={14} />,
@@ -16,40 +35,39 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
-export default async function OrdersPage() {
-  const { userId } = await auth();
-  const user = await currentUser();
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!userId || !user) redirect("/sign-in");
-
-  let profile = await prisma.sellerProfile.findUnique({ where: { clerkId: userId } });
-  if (!profile) {
-    profile = await prisma.sellerProfile.create({
-      data: { clerkId: userId, email: user.emailAddresses[0]?.emailAddress || "", approved: true, suspended: false },
-    });
-  }
-
-  const orders = await prisma.order.findMany({
-    where: { sellerId: profile.id },
-    include: { items: true },
-    orderBy: { createdAt: "desc" },
-  });
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/admin/orders");
+        const data = await res.json();
+        setOrders(data.orders || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const totalRevenue = orders
     .filter((o) => o.status === "PAID")
     .reduce((sum, o) => sum + o.total, 0);
 
-  const pendingOrders = orders.filter((o) => o.status === "PENDING").length;
+  const pendingCount = orders.filter((o) => o.status === "PENDING").length;
 
   return (
     <div className={styles.page}>
       <header className={styles.pageHeader}>
         <h1 className={styles.title}>
-          Customer <span className={styles.italic}>Orders</span>
+          All <span className={styles.italic}>Orders</span>
         </h1>
-        <p className={styles.welcome}>
-          {orders.length} order{orders.length !== 1 ? "s" : ""} received
-        </p>
+        <p className={styles.welcome}>{orders.length} order{orders.length !== 1 ? "s" : ""} across all sellers</p>
       </header>
 
       <div className={styles.stats}>
@@ -70,16 +88,18 @@ export default async function OrdersPage() {
         <div className={styles.statCard}>
           <div className={styles.statIcon}><Clock size={16} /></div>
           <div className={styles.statInfo}>
-            <span className={styles.statValue}>{pendingOrders}</span>
+            <span className={styles.statValue}>{pendingCount}</span>
             <span className={styles.statLabel}>Pending</span>
           </div>
         </div>
       </div>
 
-      {orders.length === 0 ? (
+      {loading ? (
+        <div className={styles.spinner} />
+      ) : orders.length === 0 ? (
         <div className={styles.empty}>
           <p className={styles.emptyText}>No orders yet</p>
-          <p className={styles.emptyHint}>When customers place orders, they will appear here</p>
+          <p className={styles.emptyHint}>Orders from all sellers will appear here</p>
         </div>
       ) : (
         <div className={styles.tableWrapper}>

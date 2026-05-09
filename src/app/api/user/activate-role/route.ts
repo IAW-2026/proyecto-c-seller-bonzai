@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       create: {
         clerkId: userId,
         email,
-        approved: false,
+        approved: true,
         suspended: false,
       },
     });
