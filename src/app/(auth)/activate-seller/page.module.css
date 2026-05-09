@@ -19,37 +19,23 @@
 }
 
 .content {
-  text-align: center;
-}
-
-.iconWrapper {
-  width: 3rem;
-  height: 3rem;
-  background: rgba(27, 61, 47, 0.1);
-  border-radius: 9999px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-}
-
-.icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--color-primary);
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1A1A1A;
   margin: 0;
 }
 
 .description {
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  color: #6B7280;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .highlight {
@@ -57,39 +43,47 @@
   font-weight: 600;
 }
 
-.activateBtn {
-  margin-top: 1.5rem;
-  width: 100%;
-  border-radius: var(--radius-md);
+.primaryAction {
+  border: none;
   background: var(--color-primary);
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
   color: white;
-  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.65rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
 }
 
-.activateBtn:hover {
-  background: var(--color-primary-dark);
+.primaryAction:hover {
+  background: black;
 }
 
-.activateBtn:disabled {
+.primaryAction:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.cancelBtn {
-  margin-top: 0.75rem;
-  width: 100%;
-  font-size: 0.875rem;
+.secondaryAction {
+  background: transparent;
   color: var(--color-text-muted);
-  background: none;
-  border: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
 }
 
-.cancelBtn:hover {
+.secondaryAction:hover {
   color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.secondaryAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

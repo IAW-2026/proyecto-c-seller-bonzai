@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SignUp } from "@clerk/nextjs";
+import { SignUp, SignIn } from "@clerk/nextjs";
 import { clerkTheme } from "../../lib/clerkTheme";
 import styles from "./EmailCheck.module.css";
 
@@ -60,6 +60,33 @@ export function EmailCheckSignUp() {
     );
   }
 
+  if (status === "exists_no_seller") {
+    return (
+      <div className={styles.message}>
+        <h3 className={styles.messageTitle}>Existing account</h3>
+        <p className={styles.messageDesc}>
+          <strong>{email}</strong> already has an account with a different role.
+          Sign in with your password to add seller access.
+        </p>
+        <SignIn
+          routing="hash"
+          signUpUrl="/sign-up"
+          forceRedirectUrl="/activate-seller"
+          initialValues={{ emailAddress: email }}
+          appearance={clerkTheme}
+        />
+        <div className={styles.messageActions}>
+          <button
+            className={styles.secondaryAction}
+            onClick={() => setStatus("idle")}
+          >
+            Use a different email
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {status === "idle" && (
@@ -83,27 +110,6 @@ export function EmailCheckSignUp() {
 
       {status === "loading" && (
         <div className={styles.spinner} />
-      )}
-
-      {status === "exists_no_seller" && (
-        <div className={styles.message}>
-          <h3 className={styles.messageTitle}>Account found</h3>
-          <p className={styles.messageDesc}>
-            <strong>{email}</strong> is registered but does not have seller access yet.
-            Sign in to activate the seller role.
-          </p>
-          <div className={styles.messageActions}>
-            <Link href="/sign-in" className={styles.primaryAction}>
-              Sign in
-            </Link>
-            <button
-              className={styles.secondaryAction}
-              onClick={() => setStatus("idle")}
-            >
-              Use a different email
-            </button>
-          </div>
-        </div>
       )}
 
       {status === "exists_seller" && (

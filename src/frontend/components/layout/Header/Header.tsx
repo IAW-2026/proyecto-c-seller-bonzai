@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { Button } from "../../ui/Button/Button";
 import type { ReactNode } from "react";
 import styles from "./Header.module.css";
 
@@ -17,6 +19,7 @@ interface HeaderProps {
 
 export function Header({ navItems, actions }: HeaderProps) {
   const pathname = usePathname();
+  const { isSignedIn, signOut } = useAuth();
 
   return (
     <header className={styles.header}>
@@ -39,7 +42,20 @@ export function Header({ navItems, actions }: HeaderProps) {
         </nav>
       )}
 
-      {actions && <div className={styles.actions}>{actions}</div>}
+      <div className={styles.actions}>
+        {isSignedIn ? (
+          <>
+            <Link href="/dashboard">
+              <Button variant="ghost">Dashboard</Button>
+            </Link>
+            <Button variant="primary" onClick={() => signOut({ redirectUrl: "/" })}>
+              Logout
+            </Button>
+          </>
+        ) : (
+          actions
+        )}
+      </div>
     </header>
   );
 }

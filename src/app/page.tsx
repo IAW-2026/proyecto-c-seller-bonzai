@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
 import { Header } from "../frontend/components/layout/Header/Header";
 import { Button, Badge } from "../frontend/components";
 import { Package, BarChart3, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
@@ -31,7 +32,10 @@ const sellerTools = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth();
+  const isSignedIn = !!userId;
+
   return (
     <div className={styles.page}>
       <Header 
@@ -98,8 +102,8 @@ export default function HomePage() {
         {/* BOTTOM CTA SECTION */}
         <section className={styles.discoverMore}>
           <div className={styles.line}></div>
-          <Link href="/sign-up" className={styles.discoverLink}>
-            Open your Seller Account <ArrowRight size={14} />
+          <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className={styles.discoverLink}>
+            {isSignedIn ? "Go to Dashboard" : "Open your Seller Account"} <ArrowRight size={14} />
           </Link>
           <div className={styles.line}></div>
         </section>

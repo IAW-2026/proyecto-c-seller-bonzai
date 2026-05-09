@@ -19,6 +19,18 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const pathname = req.nextUrl.pathname;
 
+  if (pathname === "/activate-seller" && userId) {
+    const roles = await getUserRoles(userId);
+    if (roles.includes("seller")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/activate-seller")) {
+    return NextResponse.next();
+  }
+
   if (publicRoutes.some((r) => pathname.startsWith(r))) {
     return NextResponse.next();
   }
@@ -39,7 +51,14 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   const roles = await getUserRoles(userId);
-  
+
+  if (pathname.startsWith("/dashboard")) {
+    if (!roles.includes("seller")) {
+      return NextResponse.redirect(new URL("/activate-seller", req.url));
+    }
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/api/admin/")) {
     if (!roles.includes("seller_admin") && !roles.includes("super_admin")) {
       return NextResponse.json(
