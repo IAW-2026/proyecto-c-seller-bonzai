@@ -49,6 +49,29 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   });
 }
 
+export async function cancelOrderWithStockRestore(id: string): Promise<Order> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+
+    for (const item of order.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { increment: item.quantity } },
+      });
+    }
+
+    return tx.order.update({
+      where: { id },
+      data: { status: OrderStatus.CANCELLED },
+    });
+  });
+}
+
 export async function confirmPayment(
   id: string,
   transactionId: string,

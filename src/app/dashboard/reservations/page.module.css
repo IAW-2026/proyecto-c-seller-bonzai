@@ -101,12 +101,12 @@
 }
 
 .table {
-  min-width: 440px;
+  min-width: 560px;
 }
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 4rem 7rem 7rem;
+  grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   background: rgba(27, 61, 47, 0.02);
@@ -123,7 +123,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 4rem 7rem 7rem;
+  grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--color-border);
@@ -181,9 +181,9 @@
 }
 
 .badgeACTIVE {
-  color: #2563eb;
-  border-color: rgba(37, 99, 235, 0.2);
-  background: rgba(37, 99, 235, 0.05);
+  color: #034113;
+  border-color: rgba(7, 129, 37, 0.2);
+  background: rgba(7, 99, 12, 0.05);
 }
 
 .badgeCOMPLETED {
@@ -202,6 +202,39 @@
   color: #d97706;
   border-color: rgba(217, 119, 6, 0.2);
   background: rgba(217, 119, 6, 0.05);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 0;
+}
+
+.pageLink {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  cursor: pointer;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+}
+
+.pageLink:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pageInfo {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
 }
 
 @media (max-width: 1023px) {

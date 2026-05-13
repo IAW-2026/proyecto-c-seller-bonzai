@@ -1,5 +1,21 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "./prisma";
+
+export async function requireAdmin(): Promise<void> {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const raw = user.publicMetadata as Record<string, unknown> | undefined;
+  const roles: string[] = Array.isArray(raw?.roles) ? raw.roles : [];
+
+  if (!roles.includes("seller_admin") && !roles.includes("super_admin")) {
+    throw new Error("FORBIDDEN");
+  }
+}
 
 export async function getSellerId(): Promise<string> {
   const { userId } = await auth();

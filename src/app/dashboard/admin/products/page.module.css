@@ -124,12 +124,12 @@
 }
 
 .table {
-  min-width: 600px;
+  min-width: 700px;
 }
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 10rem 5rem 7rem 8rem;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1.2fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   background: rgba(27, 61, 47, 0.02);
@@ -146,7 +146,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 10rem 5rem 7rem 8rem;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1.2fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--color-border);
@@ -172,6 +172,12 @@
   align-items: center;
   gap: 0.6rem;
   min-width: 0;
+}
+
+.headerIcon {
+  display: inline-block;
+  width: calc(14px + 0.6rem);
+  flex-shrink: 0;
 }
 
 .productIcon {
@@ -493,6 +499,10 @@
     margin: 0 -1rem;
     border-left: none;
     border-right: none;
+  }
+
+  .productDesc {
+    display: none;
   }
 
   .title { font-size: 1.75rem; }

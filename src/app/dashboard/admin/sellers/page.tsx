@@ -201,19 +201,21 @@ export default function AdminSellersPage() {
             ))}
           </div>
         </div>
-          <div className={styles.pagination}>
-            {page > 1 && (
-              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
-                Previous
-              </button>
-            )}
-            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-            {page < totalPages && (
-              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
-                Next
-              </button>
-            )}
-          </div>
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              {page > 1 && (
+                <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                  Previous
+                </button>
+              )}
+              <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+              {page < totalPages && (
+                <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                  Next
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

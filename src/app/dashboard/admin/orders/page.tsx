@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
+import { OrderDetailsModal } from "../../../../frontend/components/orders/OrderDetailsModal";
 import styles from "./page.module.css";
 
 interface OrderItem {
@@ -16,6 +17,7 @@ interface Order {
   id: string;
   buyerId: string;
   sellerId: string;
+  sellerEmail: string | null;
   status: string;
   total: number;
   transactionId: string | null;
@@ -81,7 +83,7 @@ export default function AdminOrdersPage() {
 
   const allOrders = orders;
   const totalRevenue = allOrders
-    .filter((o) => o.status === "PAID")
+    .filter((o) => o.status === "PAID" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
 
   const pendingCount = allOrders.filter((o) => o.status === "PENDING").length;
@@ -152,7 +154,22 @@ export default function AdminOrdersPage() {
             {allOrders.map((order) => (
               <div key={order.id} className={styles.tableRow}>
                 <div className={styles.tableCell}>
-                  <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
+                  <OrderDetailsModal
+                    orderId={order.id}
+                    status={order.status}
+                    total={order.total}
+                    createdAt={order.createdAt}
+                    trackingId={order.transactionId}
+                    sellerEmail={order.sellerEmail}
+                    items={order.items.map((i) => ({
+                      productName: i.productName,
+                      quantity: i.quantity,
+                      unitPrice: i.unitPrice,
+                      subtotal: i.subtotal,
+                    }))}
+                  >
+                    <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
+                  </OrderDetailsModal>
                 </div>
                 <div className={styles.tableCell}>
                   <span className={styles.itemCount}>
@@ -181,19 +198,21 @@ export default function AdminOrdersPage() {
             ))}
           </div>
         </div>
-          <div className={styles.pagination}>
-            {page > 1 && (
-              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
-                Previous
-              </button>
-            )}
-            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-            {page < totalPages && (
-              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
-                Next
-              </button>
-            )}
-          </div>
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              {page > 1 && (
+                <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                  Previous
+                </button>
+              )}
+              <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+              {page < totalPages && (
+                <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                  Next
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { getSellerId } from "../../../lib/auth-helpers";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,6 +10,8 @@ cloudinary.config({
 
 export async function POST(req: Request) {
   try {
+    await getSellerId();
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 

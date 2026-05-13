@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
 import { ShipButton } from "../../../frontend/components/orders/ShipButton";
+import { OrderDetailsModal } from "../../../frontend/components/orders/OrderDetailsModal";
 import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
 import styles from "./page.module.css";
 
@@ -40,8 +41,9 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
   const limit = 10;
   const skip = (page - 1) * limit;
 
+  const validStatuses = ["PENDING", "PAID", "SHIPPED", "CANCELLED"];
   const where: Record<string, unknown> = { sellerId: profile.id };
-  if (search) {
+  if (search && validStatuses.includes(search.toUpperCase())) {
     where.status = search.toUpperCase();
   }
 
@@ -63,7 +65,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
 
   const statsOrders = allOrders || orders;
   const totalRevenue = statsOrders
-    .filter((o) => o.status === "PAID")
+    .filter((o) => o.status === "PAID" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
   const pendingOrders = statsOrders.filter((o) => o.status === "PENDING").length;
 
@@ -124,7 +126,21 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
               {orders.map((order) => (
                 <div key={order.id} className={styles.tableRow}>
                   <div className={styles.tableCell}>
-                    <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
+                    <OrderDetailsModal
+                      orderId={order.id}
+                      status={order.status}
+                      total={order.total}
+                      createdAt={order.createdAt.toISOString()}
+                      trackingId={order.trackingId}
+                      items={order.items.map((i) => ({
+                        productName: i.productName,
+                        quantity: i.quantity,
+                        unitPrice: i.unitPrice,
+                        subtotal: i.subtotal,
+                      }))}
+                    >
+                      <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
+                    </OrderDetailsModal>
                   </div>
                   <div className={styles.tableCell}>
                     <span className={styles.itemCount}>

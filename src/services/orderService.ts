@@ -50,9 +50,10 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
     });
 
     const reservation = await reservationRepo.findActiveReservationByProductAndBuyer(item.productId, buyerId);
-    if (reservation) {
-      reservationIds.push(reservation.id);
+    if (!reservation) {
+      return { success: false, error: "NO_ACTIVE_RESERVATION", message: `El producto ${item.name} no tiene una reserva activa. Debe reservarse antes de crear la orden.`, status: 409 };
     }
+    reservationIds.push(reservation.id);
   }
 
   if (!sellerId) {
@@ -87,7 +88,7 @@ export async function cancelOrder(orderId: string) {
     return { success: false, error: "ORDER_ALREADY_CANCELLED", message: "La orden ya fue cancelada previamente.", status: 409 };
   }
 
-  await orderRepo.updateOrderStatus(orderId, OrderStatus.CANCELLED);
+  await orderRepo.cancelOrderWithStockRestore(orderId);
 
   return { success: true };
 }

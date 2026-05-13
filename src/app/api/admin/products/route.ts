@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { requireAdmin } from "../../../../lib/auth-helpers";
 
 export async function GET(req: NextRequest) {
   try {
+    await requireAdmin();
+
     const { searchParams } = req.nextUrl;
     const search = searchParams.get("search") || "";
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -31,7 +34,13 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({ products, total });
-  } catch {
+  } catch (error: any) {
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
+    }
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "FORBIDDEN", message: "Requiere rol de administrador." }, { status: 403 });
+    }
     return NextResponse.json(
       { error: "SERVER_ERROR", message: "Error fetching products." },
       { status: 500 }

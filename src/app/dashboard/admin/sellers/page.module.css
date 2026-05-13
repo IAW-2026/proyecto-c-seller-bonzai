@@ -133,12 +133,12 @@
 }
 
 .table {
-  min-width: 520px;
+  min-width: 600px;
 }
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 7rem 7rem 9rem;
+  grid-template-columns: 2fr 1fr 1.2fr 1.4fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   background: rgba(27, 61, 47, 0.02);
@@ -155,7 +155,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 7rem 7rem 9rem;
+  grid-template-columns: 2fr 1fr 1.2fr 1.4fr;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--color-border);
@@ -378,14 +378,6 @@
     margin: 0 -1rem;
     border-left: none;
     border-right: none;
-  }
-
-  .tableHeader {
-    grid-template-columns: 1fr 6rem 6rem 7rem;
-  }
-
-  .tableRow {
-    grid-template-columns: 1fr 6rem 6rem 7rem;
   }
 
   .title { font-size: 1.75rem; }

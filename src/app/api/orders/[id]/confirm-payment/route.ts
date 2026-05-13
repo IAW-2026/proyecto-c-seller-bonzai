@@ -7,6 +7,14 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const serviceKey = req.headers.get("x-service-key");
+    if (serviceKey !== process.env.SERVICE_API_KEY) {
+      return NextResponse.json(
+        { error: "UNAUTHORIZED", message: "Acceso no autorizado." },
+        { status: 401 }
+      );
+    }
+
     const { id } = await context.params;
     const body = await req.json();
 

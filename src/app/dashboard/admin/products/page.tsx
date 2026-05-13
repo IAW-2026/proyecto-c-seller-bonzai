@@ -167,7 +167,10 @@ export default function AdminProductsPage() {
           <div className={styles.tableWrapper}>
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span className={styles.tableHeaderCell}>Product</span>
+              <span className={styles.tableHeaderCell}>
+                <span className={styles.headerIcon} />
+                Product
+              </span>
               <span className={styles.tableHeaderCell}>Seller</span>
               <span className={styles.tableHeaderCell}>Price</span>
               <span className={styles.tableHeaderCell}>Status</span>
@@ -218,19 +221,21 @@ export default function AdminProductsPage() {
             ))}
           </div>
         </div>
-          <div className={styles.pagination}>
-            {page > 1 && (
-              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
-                Previous
-              </button>
-            )}
-            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-            {page < totalPages && (
-              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
-                Next
-              </button>
-            )}
-          </div>
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              {page > 1 && (
+                <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                  Previous
+                </button>
+              )}
+              <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+              {page < totalPages && (
+                <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                  Next
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
 
