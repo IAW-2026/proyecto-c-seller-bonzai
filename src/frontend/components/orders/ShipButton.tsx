@@ -28,10 +28,9 @@ export function ShipButton({ orderId }: { orderId: string }) {
   };
 
   return (
-    <div style={{ position: "relative" }}>
+    <>
       <button
         onClick={() => setOpen(true)}
-        className="shipBtn"
         style={{
           fontSize: "0.65rem",
           textTransform: "uppercase",
@@ -48,78 +47,92 @@ export function ShipButton({ orderId }: { orderId: string }) {
       </button>
       {open && (
         <div
+          onClick={() => setOpen(false)}
           style={{
-            position: "absolute",
-            right: 0,
-            top: "calc(100% + 0.5rem)",
-            background: "white",
-            border: "1.5px solid var(--color-border)",
-            borderRadius: "var(--radius-lg)",
-            padding: "1rem",
-            zIndex: 50,
-            minWidth: "260px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.3)",
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.5rem", color: "var(--color-text)" }}>
-            Tracking Number
-          </div>
-          <input
-            type="text"
-            value={tracking}
-            onChange={(e) => setTracking(e.target.value)}
-            placeholder="e.g. TRACK123456"
+          <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              width: "100%",
-              boxSizing: "border-box",
-              padding: "0.5rem 0.75rem",
-              fontSize: "0.85rem",
+              background: "white",
               border: "1.5px solid var(--color-border)",
               borderRadius: "var(--radius-lg)",
-              outline: "none",
-              fontFamily: "inherit",
-              marginBottom: "0.75rem",
+              padding: "1.5rem",
+              minWidth: "320px",
+              maxWidth: "90vw",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
             }}
-            autoFocus
-          />
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-            <button
-              onClick={() => setOpen(false)}
+          >
+            <div style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "0.25rem", color: "var(--color-text)" }}>
+              Ship Order
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginBottom: "1rem" }}>
+              Order #{orderId.slice(0, 8)}
+            </div>
+            <input
+              type="text"
+              value={tracking}
+              onChange={(e) => setTracking(e.target.value)}
+              placeholder="e.g. TRACK123456"
               style={{
-                fontSize: "0.65rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontWeight: 600,
-                padding: "0.4rem 0.75rem",
-                background: "none",
-                border: "1px solid var(--color-border)",
-                cursor: "pointer",
-                color: "var(--color-text-muted)",
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "0.6rem 0.75rem",
+                fontSize: "0.9rem",
+                border: "1.5px solid var(--color-border)",
+                borderRadius: "var(--radius-lg)",
+                outline: "none",
+                fontFamily: "inherit",
+                marginBottom: "1rem",
               }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleShip}
-              disabled={!tracking.trim() || loading}
-              style={{
-                fontSize: "0.65rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontWeight: 600,
-                padding: "0.4rem 0.75rem",
-                background: "var(--color-primary)",
-                color: "white",
-                border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: !tracking.trim() || loading ? 0.6 : 1,
-              }}
-            >
-              {loading ? "Shipping..." : "Confirm Ship"}
-            </button>
+              autoFocus
+            />
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  fontSize: "0.65rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  fontWeight: 600,
+                  padding: "0.5rem 1rem",
+                  background: "none",
+                  border: "1px solid var(--color-border)",
+                  cursor: "pointer",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleShip}
+                disabled={!tracking.trim() || loading}
+                style={{
+                  fontSize: "0.65rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  fontWeight: 600,
+                  padding: "0.5rem 1rem",
+                  background: "var(--color-primary)",
+                  color: "white",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: !tracking.trim() || loading ? 0.6 : 1,
+                }}
+              >
+                {loading ? "Shipping..." : "Confirm Ship"}
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
