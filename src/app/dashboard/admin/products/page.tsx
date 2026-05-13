@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Package, Layers, AlertCircle, ShieldAlert } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -32,18 +32,27 @@ const statusReasons = [
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [modaling, setModaling] = useState<string | null>(null);
   const [selectedReason, setSelectedReason] = useState("");
   const [moderationNote, setModerationNote] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/products");
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      params.set("page", String(page));
+      params.set("limit", String(perPage));
+      const res = await fetch(`/api/admin/products?${params}`);
       const data = await res.json();
       setProducts(data.products || []);
+      setTotal(data.total || 0);
     } catch (e) {
       console.error(e);
     } finally {
@@ -53,7 +62,8 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search]);
 
   const openModal = (productId: string) => {
     setModaling(productId);
@@ -79,8 +89,25 @@ export default function AdminProductsPage() {
     }
   };
 
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setPage(1);
+    }, 300);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search]);
+
   const activeCount = products.filter((p) => p.moderationStatus === "ACTIVE").length;
   const moderatedCount = products.filter((p) => p.moderationStatus !== "ACTIVE").length;
+  const totalPages = Math.ceil(total / perPage);
 
   return (
     <div className={styles.page}>
@@ -88,7 +115,7 @@ export default function AdminProductsPage() {
         <h1 className={styles.title}>
           Product <span className={styles.italic}>Moderation</span>
         </h1>
-        <p className={styles.welcome}>{products.length} product{products.length !== 1 ? "s" : ""} in the catalog</p>
+        <p className={styles.welcome}>{total} product{total !== 1 ? "s" : ""} in the catalog</p>
       </header>
 
       <div className={styles.stats}>
@@ -117,6 +144,17 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      <div className={styles.searchBar}>
+        <input
+          type="text"
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="Search products..."
+          className={styles.searchInput}
+        />
+        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+      </div>
+
       {loading ? (
         <div className={styles.spinner} />
       ) : products.length === 0 ? (
@@ -125,7 +163,8 @@ export default function AdminProductsPage() {
           <p className={styles.emptyHint}>Products will appear once sellers add them</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
+        <>
+          <div className={styles.tableWrapper}>
           <div className={styles.table}>
             <div className={styles.tableHeader}>
               <span className={styles.tableHeaderCell}>Product</span>
@@ -179,6 +218,20 @@ export default function AdminProductsPage() {
             ))}
           </div>
         </div>
+          <div className={styles.pagination}>
+            {page > 1 && (
+              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                Previous
+              </button>
+            )}
+            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+            {page < totalPages && (
+              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                Next
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {modaling && (

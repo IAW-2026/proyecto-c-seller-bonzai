@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
 import styles from "./page.module.css";
 
 interface OrderItem {
@@ -26,40 +26,66 @@ interface Order {
 const statusIcons: Record<string, React.ReactNode> = {
   PENDING: <Clock size={14} />,
   PAID: <CheckCircle size={14} />,
+  SHIPPED: <Truck size={14} />,
   CANCELLED: <XCircle size={14} />,
 };
 
 const statusLabels: Record<string, string> = {
   PENDING: "Pending",
   PAID: "Paid",
+  SHIPPED: "Shipped",
   CANCELLED: "Cancelled",
 };
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      params.set("page", String(page));
+      params.set("limit", String(perPage));
+      const res = await fetch(`/api/admin/orders?${params}`);
+      const data = await res.json();
+      setOrders(data.orders || []);
+      setTotalOrders(data.total || 0);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/admin/orders");
-        const data = await res.json();
-        setOrders(data.orders || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchOrders();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search]);
 
-  const totalRevenue = orders
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setPage(1);
+    }, 300);
+  };
+
+  const allOrders = orders;
+  const totalRevenue = allOrders
     .filter((o) => o.status === "PAID")
     .reduce((sum, o) => sum + o.total, 0);
 
-  const pendingCount = orders.filter((o) => o.status === "PENDING").length;
+  const pendingCount = allOrders.filter((o) => o.status === "PENDING").length;
+  const totalPages = Math.ceil(totalOrders / perPage);
 
   return (
     <div className={styles.page}>
@@ -67,7 +93,7 @@ export default function AdminOrdersPage() {
         <h1 className={styles.title}>
           All <span className={styles.italic}>Orders</span>
         </h1>
-        <p className={styles.welcome}>{orders.length} order{orders.length !== 1 ? "s" : ""} across all sellers</p>
+        <p className={styles.welcome}>{totalOrders} order{totalOrders !== 1 ? "s" : ""} across all sellers</p>
       </header>
 
       <div className={styles.stats}>
@@ -94,15 +120,27 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
+      <div className={styles.searchBar}>
+        <input
+          type="text"
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="Search by order ID or status..."
+          className={styles.searchInput}
+        />
+        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+      </div>
+
       {loading ? (
         <div className={styles.spinner} />
-      ) : orders.length === 0 ? (
+      ) : totalOrders === 0 ? (
         <div className={styles.empty}>
           <p className={styles.emptyText}>No orders yet</p>
           <p className={styles.emptyHint}>Orders from all sellers will appear here</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
+        <>
+          <div className={styles.tableWrapper}>
           <div className={styles.table}>
             <div className={styles.tableHeader}>
               <span className={styles.tableHeaderCell}>Order</span>
@@ -111,7 +149,7 @@ export default function AdminOrdersPage() {
               <span className={styles.tableHeaderCell}>Status</span>
               <span className={styles.tableHeaderCell}>Date</span>
             </div>
-            {orders.map((order) => (
+            {allOrders.map((order) => (
               <div key={order.id} className={styles.tableRow}>
                 <div className={styles.tableCell}>
                   <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
@@ -143,6 +181,20 @@ export default function AdminOrdersPage() {
             ))}
           </div>
         </div>
+          <div className={styles.pagination}>
+            {page > 1 && (
+              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                Previous
+              </button>
+            )}
+            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+            {page < totalPages && (
+              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                Next
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

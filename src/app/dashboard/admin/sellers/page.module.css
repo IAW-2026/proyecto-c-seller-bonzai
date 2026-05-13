@@ -267,6 +267,95 @@
   color: white;
 }
 
+.searchBar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  outline: none;
+  font-family: inherit;
+  color: var(--color-text);
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(27, 61, 47, 0.1);
+}
+
+.searchBtn {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.clearBtn {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.pageLink {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pageLink:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pageLink:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pageInfo {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
 @media (max-width: 1023px) {
   .pageHeader {
     margin-bottom: 2rem;

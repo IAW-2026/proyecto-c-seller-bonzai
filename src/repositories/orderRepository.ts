@@ -59,3 +59,10 @@ export async function confirmPayment(
     data: { status: OrderStatus.PAID, transactionId, paidAt },
   });
 }
+
+export async function shipOrder(id: string, trackingId: string): Promise<Order> {
+  return prisma.order.update({
+    where: { id },
+    data: { status: OrderStatus.SHIPPED, trackingId, shippedAt: new Date() },
+  });
+}

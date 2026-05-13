@@ -14,16 +14,19 @@ interface Seller {
 }
 
 export default function AdminSellersPage() {
-  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [allSellers, setAllSellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
   const fetchSellers = async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/sellers");
       const data = await res.json();
-      setSellers(data.sellers || []);
+      setAllSellers(data.sellers || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -59,9 +62,16 @@ export default function AdminSellersPage() {
     }
   };
 
-  const approved = sellers.filter((s) => s.approved && !s.suspended);
-  const pending = sellers.filter((s) => !s.approved);
-  const suspended = sellers.filter((s) => s.suspended);
+  const filtered = allSellers.filter((s) =>
+    !search || s.email.toLowerCase().includes(search.toLowerCase())
+  );
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / perPage);
+  const sellers = filtered.slice((page - 1) * perPage, page * perPage);
+
+  const approved = allSellers.filter((s) => s.approved && !s.suspended);
+  const pending = allSellers.filter((s) => !s.approved);
+  const suspended = allSellers.filter((s) => s.suspended);
 
   return (
     <div className={styles.page}>
@@ -69,14 +79,14 @@ export default function AdminSellersPage() {
         <h1 className={styles.title}>
           Seller <span className={styles.italic}>Management</span>
         </h1>
-        <p className={styles.welcome}>{sellers.length} registered seller{sellers.length !== 1 ? "s" : ""}</p>
+        <p className={styles.welcome}>{allSellers.length} registered seller{allSellers.length !== 1 ? "s" : ""}</p>
       </header>
 
       <div className={styles.stats}>
         <div className={styles.statCard}>
           <div className={styles.statIcon}><Users size={16} /></div>
           <div className={styles.statInfo}>
-            <span className={styles.statValue}>{sellers.length}</span>
+            <span className={styles.statValue}>{allSellers.length}</span>
             <span className={styles.statLabel}>Total Sellers</span>
           </div>
         </div>
@@ -107,15 +117,27 @@ export default function AdminSellersPage() {
         </div>
       </div>
 
+      <div className={styles.searchBar}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search sellers by email..."
+          className={styles.searchInput}
+        />
+        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+      </div>
+
       {loading ? (
         <div className={styles.spinner} />
-      ) : sellers.length === 0 ? (
+      ) : total === 0 ? (
         <div className={styles.empty}>
           <p className={styles.emptyText}>No sellers registered</p>
           <p className={styles.emptyHint}>Sellers will appear once they sign up and activate their account</p>
         </div>
       ) : (
-        <div className={styles.tableWrapper}>
+        <>
+          <div className={styles.tableWrapper}>
           <div className={styles.table}>
             <div className={styles.tableHeader}>
               <span className={styles.tableHeaderCell}>Seller</span>
@@ -179,6 +201,20 @@ export default function AdminSellersPage() {
             ))}
           </div>
         </div>
+          <div className={styles.pagination}>
+            {page > 1 && (
+              <button className={styles.pageLink} onClick={() => setPage(page - 1)}>
+                Previous
+              </button>
+            )}
+            <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+            {page < totalPages && (
+              <button className={styles.pageLink} onClick={() => setPage(page + 1)}>
+                Next
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

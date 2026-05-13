@@ -118,6 +118,30 @@ export async function confirmPayment(orderId: string, transactionId: string, pai
   };
 }
 
+export async function shipOrder(orderId: string, trackingId: string) {
+  const order = await orderRepo.findOrderById(orderId);
+
+  if (!order) {
+    return { success: false, error: "ORDER_NOT_FOUND", message: "Order not found.", status: 404 };
+  }
+
+  if (order.status === OrderStatus.CANCELLED) {
+    return { success: false, error: "ORDER_CANCELLED", message: "Cannot ship a cancelled order.", status: 409 };
+  }
+
+  if (order.status === OrderStatus.SHIPPED) {
+    return { success: false, error: "ALREADY_SHIPPED", message: "Order is already shipped.", status: 409 };
+  }
+
+  if (order.status === OrderStatus.PENDING) {
+    return { success: false, error: "ORDER_NOT_PAID", message: "Order must be paid before shipping.", status: 409 };
+  }
+
+  await orderRepo.shipOrder(orderId, trackingId);
+
+  return { success: true, orderId, newStatus: OrderStatus.SHIPPED };
+}
+
 export async function getOrdersByBuyer(buyerId: string) {
   const orders = await orderRepo.findOrdersByBuyerId(buyerId);
 

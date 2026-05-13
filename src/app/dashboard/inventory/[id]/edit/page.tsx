@@ -13,5 +13,5 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) redirect("/dashboard/inventory");
 
-  return <EditProductForm product={product} />;
+  return <EditProductForm product={product} categoryId={product.categoryId} />;
 }

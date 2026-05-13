@@ -10,6 +10,7 @@ datasource db {
 enum OrderStatus {
   PENDING
   PAID
+  SHIPPED
   CANCELLED
 }
 
@@ -72,6 +73,7 @@ model Order {
   transactionId String?
   trackingId    String?
   paidAt        DateTime?
+  shippedAt     DateTime?
   createdAt     DateTime    @default(now())
 
   items OrderItem[]

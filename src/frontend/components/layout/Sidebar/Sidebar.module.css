@@ -64,7 +64,8 @@
 
 @media (min-width: 1024px) {
   .sidebar {
-    position: relative;
+    position: sticky;
+    top: 0;
     transform: none;
   }
 
