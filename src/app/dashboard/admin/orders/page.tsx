@@ -143,7 +143,7 @@ export default function AdminOrdersPage() {
         <div className={styles.statCard}>
           <div className={styles.statIcon}><ShoppingBag size={16} /></div>
           <div className={styles.statInfo}>
-            <span className={styles.statValue}>{orders.length}</span>
+            <span className={styles.statValue}>{totalOrders}</span>
             <span className={styles.statLabel}>Total Orders</span>
           </div>
         </div>
