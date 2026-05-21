@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Package, Layers, AlertCircle, ShieldAlert } from "lucide-react";
+import { Package, Layers, AlertCircle, ShieldAlert, X } from "lucide-react";
+import { ProductPreviewModal } from "../../../../frontend/components/products/ProductPreviewModal";
 import styles from "./page.module.css";
 
 interface Product {
@@ -11,10 +12,13 @@ interface Product {
   price: number;
   stock: number;
   isActive: boolean;
+  isFragile: boolean;
+  imageUrl: string | null;
   moderationStatus: string;
   moderationNote: string | null;
   createdAt: string;
   seller: { id: string; email: string };
+  category: { name: string } | null;
 }
 
 const statusLabels: Record<string, string> = {
@@ -144,15 +148,32 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      <div className={styles.searchBar}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "stretch", marginBottom: "1.5rem" }}>
         <input
           type="text"
           value={search}
           onChange={handleSearchChange}
           placeholder="Search products..."
-          className={styles.searchInput}
+          style={{
+            flex: 1, boxSizing: "border-box", padding: "0.6rem 0.75rem", fontSize: "0.85rem",
+            border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)",
+            outline: "none", fontFamily: "inherit", color: "var(--color-text)",
+            transition: "border-color 0.2s ease",
+          }}
+          onFocus={(e) => { e.target.style.borderColor = "var(--color-primary)"; }}
+          onBlur={(e) => { e.target.style.borderColor = "var(--color-border)"; }}
         />
-        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+        {search && (
+          <button type="button" onClick={() => { setSearch(""); setPage(1); }} title="Clear search"
+            style={{
+              width: "2.2rem", height: "2.2rem", borderRadius: "50%", alignSelf: "flex-end",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-text-muted)", border: "1px solid var(--color-border)",
+              background: "none", cursor: "pointer", padding: 0, flexShrink: 0,
+            }}>
+            <X size={13} />
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -179,15 +200,17 @@ export default function AdminProductsPage() {
             {products.map((product) => (
               <div key={product.id} className={styles.tableRow}>
                 <div className={styles.tableCell}>
-                  <div className={styles.productInfo}>
-                    <ShieldAlert size={14} className={styles.productIcon} />
-                    <div>
-                      <span className={styles.productName}>{product.name}</span>
-                      {product.description && (
-                        <span className={styles.productDesc}>{product.description}</span>
-                      )}
+                    <div className={styles.productInfo}>
+                      <ShieldAlert size={14} className={styles.productIcon} />
+                      <div>
+                        <ProductPreviewModal product={product}>
+                          <span className={styles.productName}>{product.name}</span>
+                        </ProductPreviewModal>
+                        {product.description && (
+                          <span className={styles.productDesc}>{product.description}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
                 </div>
                 <div className={styles.tableCell}>
                   <span className={styles.sellerEmail}>{product.seller.email}</span>

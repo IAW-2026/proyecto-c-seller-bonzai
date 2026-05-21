@@ -212,15 +212,15 @@
 }
 
 .badgeCANCELLED {
-  color: var(--color-error);
-  border-color: rgba(220, 38, 38, 0.2);
-  background: rgba(220, 38, 38, 0.05);
+  color: #8B7355;
+  border-color: rgba(139, 115, 85, 0.2);
+  background: rgba(139, 115, 85, 0.05);
 }
 
 .badgeEXPIRED {
-  color: #d97706;
-  border-color: rgba(217, 119, 6, 0.2);
-  background: rgba(217, 119, 6, 0.05);
+  color: #8B7355;
+  border-color: rgba(139, 115, 85, 0.2);
+  background: rgba(139, 115, 85, 0.05);
 }
 
 .pagination {

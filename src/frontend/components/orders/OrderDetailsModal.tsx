@@ -71,7 +71,7 @@ function OrderTimeline({ events, currentStatus }: { events: { status: string; ti
           const isCancelled = event.status === "CANCELLED";
           return (
             <div key={i} style={{ position: "relative", paddingBottom: i < events.length - 1 ? "0.75rem" : 0 }}>
-              <div style={{ position: "absolute", left: "-1.05rem", top: "0.15rem", width: "0.6rem", height: "0.6rem", borderRadius: "50%", background: completed ? (isCancelled ? "#dc2626" : "var(--color-primary)") : "var(--color-border)", border: "2px solid white", boxShadow: "0 0 0 1px var(--color-border)" }} />
+              <div style={{ position: "absolute", left: "-1.05rem", top: "0.15rem", width: "0.6rem", height: "0.6rem", borderRadius: "50%", background: completed ? (isCancelled ? "#8B7355" : "var(--color-primary)") : "var(--color-border)", border: "2px solid white", boxShadow: "0 0 0 1px var(--color-border)" }} />
               <div style={{ fontSize: "0.78rem", fontWeight: completed ? 500 : 400, color: completed ? "var(--color-text)" : "var(--color-text-muted)" }}>{event.label}</div>
               {event.timestamp && (
                 <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.1rem" }}>
@@ -144,9 +144,9 @@ export function OrderDetailsModal(props: OrderDetailsModalProps) {
             </div>
 
             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, padding: "0.25rem 0.5rem", border: "1px solid", marginBottom: "1.25rem",
-              color: status === "PENDING" ? "#2563eb" : status === "PAID" ? "var(--color-success)" : status === "AWAITING_TRACKING" ? "#b8860b" : status === "SHIPPED" ? "var(--color-primary)" : "var(--color-error)",
-              borderColor: status === "PENDING" ? "rgba(37,99,235,0.2)" : status === "PAID" ? "rgba(22,163,74,0.2)" : status === "AWAITING_TRACKING" ? "rgba(184,134,11,0.2)" : status === "SHIPPED" ? "rgba(27,61,47,0.2)" : "rgba(220,38,38,0.2)",
-              background: status === "PENDING" ? "rgba(37,99,235,0.05)" : status === "PAID" ? "rgba(22,163,74,0.05)" : status === "AWAITING_TRACKING" ? "rgba(184,134,11,0.05)" : status === "SHIPPED" ? "rgba(27,61,47,0.05)" : "rgba(220,38,38,0.05)",
+              color: status === "PENDING" ? "#8B7355" : status === "PAID" ? "var(--color-success)" : status === "AWAITING_TRACKING" ? "#8B7355" : status === "SHIPPED" ? "var(--color-primary)" : "#8B7355",
+              borderColor: status === "PENDING" ? "rgba(139,115,85,0.2)" : status === "PAID" ? "rgba(22,163,74,0.2)" : status === "AWAITING_TRACKING" ? "rgba(139,115,85,0.2)" : status === "SHIPPED" ? "rgba(27,61,47,0.2)" : "rgba(139,115,85,0.2)",
+              background: status === "PENDING" ? "rgba(139,115,85,0.05)" : status === "PAID" ? "rgba(22,163,74,0.05)" : status === "AWAITING_TRACKING" ? "rgba(139,115,85,0.05)" : status === "SHIPPED" ? "rgba(27,61,47,0.05)" : "rgba(139,115,85,0.05)",
             }}>
               {statusIcons[status]}
               {statusLabels[status] || status}

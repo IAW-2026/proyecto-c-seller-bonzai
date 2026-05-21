@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { isActive: true };
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         where,
         include: {
           seller: { select: { id: true, email: true } },
+          category: true,
         },
         orderBy: { createdAt: "desc" },
         skip,

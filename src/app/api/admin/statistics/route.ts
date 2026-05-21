@@ -21,7 +21,7 @@ export async function GET() {
     const totalProducts = products.length;
     const totalOrders = orders.length;
     const totalSellers = sellers.length;
-    const paidOrShipped = orders.filter((o) => o.status === "PAID" || o.status === "SHIPPED");
+    const paidOrShipped = orders.filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED");
     const totalRevenue = paidOrShipped.reduce((sum, o) => sum + o.total, 0);
     const pendingOrdersCount = orders.filter((o) => o.status === "PENDING").length;
     const shippedOrdersCount = orders.filter((o) => o.status === "SHIPPED").length;
@@ -36,7 +36,7 @@ export async function GET() {
     for (const order of orders) {
       const month = order.createdAt.toISOString().slice(0, 7);
       monthlyOrderMap.set(month, (monthlyOrderMap.get(month) || 0) + 1);
-      if (order.status === "PAID" || order.status === "SHIPPED") {
+      if (order.status === "PAID" || order.status === "AWAITING_TRACKING" || order.status === "SHIPPED") {
         monthlyMap.set(month, (monthlyMap.get(month) || 0) + order.total);
       }
     }
@@ -50,7 +50,7 @@ export async function GET() {
     const categoryRevenue = new Map<string, number>();
     const categoryCount = new Map<string, number>();
     for (const order of orders) {
-      if (order.status === "PAID" || order.status === "SHIPPED") {
+      if (order.status === "PAID" || order.status === "AWAITING_TRACKING" || order.status === "SHIPPED") {
         for (const item of order.items) {
           const product = products.find((p) => p.id === item.productId);
           const catName = product?.categoryId
@@ -72,7 +72,7 @@ export async function GET() {
 
     const sellerRevenue = new Map<string, { email: string; revenue: number; orders: number }>();
     for (const order of orders) {
-      if (order.status === "PAID" || order.status === "SHIPPED") {
+      if (order.status === "PAID" || order.status === "AWAITING_TRACKING" || order.status === "SHIPPED") {
         const seller = sellers.find((s) => s.id === order.sellerId);
         const email = seller?.email || "Unknown";
         const current = sellerRevenue.get(order.sellerId) || { email, revenue: 0, orders: 0 };

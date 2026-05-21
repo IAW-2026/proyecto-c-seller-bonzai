@@ -8,16 +8,27 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const search = searchParams.get("search") || "";
+    const status = searchParams.get("status") || "";
+    const from = searchParams.get("from") || "";
+    const to = searchParams.get("to") || "";
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
     if (search) {
-      where.OR = [
-        { id: { contains: search, mode: "insensitive" } },
-        { status: { contains: search.toUpperCase() } },
-      ];
+      where.items = {
+        some: { productName: { contains: search, mode: "insensitive" } },
+      };
+    }
+    if (status) {
+      where.status = status;
+    }
+    if (from || to) {
+      const dateFilter: Record<string, string | Date> = {};
+      if (from) dateFilter.gte = new Date(from);
+      if (to) dateFilter.lte = new Date(to + "T23:59:59.999Z");
+      where.createdAt = dateFilter;
     }
 
     const [orders, total] = await Promise.all([

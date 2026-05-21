@@ -41,7 +41,7 @@ export default async function DashboardPage() {
 
   const monthlyOrders = orders.filter((o) => o.createdAt >= firstOfMonth);
   const monthlyRevenue = monthlyOrders
-    .filter((o) => o.status === "PAID")
+    .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
   const pendingOrders = orders.filter((o) => o.status === "PENDING").length;
   const activeReservations = reservations.filter((r) => r.status === "ACTIVE").length;

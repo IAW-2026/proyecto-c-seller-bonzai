@@ -205,12 +205,12 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                       {order.status === "PAID" ? (
                         <>
                           <ShipButton orderId={order.id} />
-                          <CancelOrderButton orderId={order.id} />
+                          <CancelOrderButton orderId={order.id} iconOnly />
                         </>
                       ) : order.status === "PENDING" ? (
-                        <CancelOrderButton orderId={order.id} />
+                        <CancelOrderButton orderId={order.id} iconOnly />
                       ) : order.status === "AWAITING_TRACKING" ? (
-                        <span style={{ fontSize: "0.75rem", color: "#b8860b" }}>Awaiting tracking</span>
+                        <span style={{ fontSize: "0.75rem", color: "#8B7355" }}>Awaiting tracking</span>
                       ) : order.status === "SHIPPED" && order.trackingId ? (
                         <span className={styles.trackingId}>Track: {order.trackingId}</span>
                       ) : null}

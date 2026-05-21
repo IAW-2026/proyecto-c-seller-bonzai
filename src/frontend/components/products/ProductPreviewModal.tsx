@@ -94,7 +94,7 @@ export function ProductPreviewModal({ product, children }: ProductPreviewModalPr
                 <span style={{
                   fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600,
                   padding: "0.25rem 0.5rem", border: "1px solid",
-                  color: product.stock > 0 ? "var(--color-success)" : "var(--color-error)",
+                  color: product.stock > 0 ? "var(--color-success)" : "#8B7355",
                   borderColor: product.stock > 0 ? "rgba(22,163,74,0.2)" : "rgba(220,38,38,0.2)",
                   background: product.stock > 0 ? "rgba(22,163,74,0.05)" : "rgba(220,38,38,0.05)",
                 }}>

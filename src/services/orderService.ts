@@ -3,6 +3,7 @@ import * as productRepo from "../repositories/productRepository";
 import * as reservationRepo from "../repositories/reservationRepository";
 import type { Prisma } from "@prisma/client";
 import { OrderStatus } from "@prisma/client";
+import { sendNewOrderEmail } from "./emailService";
 
 export async function createOrder(orderId: string | undefined, buyerId: string, reservationIds: string[], status?: string) {
   const finalOrderId = orderId?.trim() || crypto.randomUUID();
@@ -54,8 +55,8 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
       return { success: false, error: "PRODUCT_SUSPENDED", message: `El producto ${product.name} está suspendido.`, status: 409 };
     }
 
-    if (product.stock <= 0) {
-      return { success: false, error: "OUT_OF_STOCK", message: `El producto ${product.name} no tiene stock disponible.`, status: 409 };
+    if (product.seller.suspended) {
+      return { success: false, error: "SELLER_SUSPENDED", message: `El vendedor del producto ${product.name} está suspendido.`, status: 409 };
     }
 
     const quantity = reservation.quantity;
@@ -90,6 +91,13 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
       create: orderItems,
     },
   }, resolvedReservationIds);
+
+  sendNewOrderEmail(sellerId, finalOrderId, buyerId, orderItems.map((i) => ({
+    productName: i.productName,
+    quantity: i.quantity,
+    unitPrice: i.unitPrice,
+    subtotal: i.subtotal,
+  })), total);
 
   return { success: true, orderId: finalOrderId, status: 201 };
 }

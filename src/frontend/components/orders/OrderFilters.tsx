@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 
 const statuses = ["PENDING", "PAID", "AWAITING_TRACKING", "SHIPPED", "CANCELLED"];
 
@@ -63,11 +63,6 @@ export function OrderFilters() {
     navigate({ search, status: value, from, to });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate({ search, status, from, to });
-  };
-
   return (
     <div style={{ marginBottom: "1.5rem" }}>
       <style>{`
@@ -77,7 +72,7 @@ export function OrderFilters() {
         .order-filters input[type="date"]:focus { border-color: #1B3D2F; box-shadow: 0 0 0 2px rgba(27,61,47,0.15); }
         .order-filters input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.3) sepia(1) hue-rotate(100deg); cursor: pointer; }
       `}</style>
-      <form onSubmit={handleSubmit} className="order-filters">
+      <div className="order-filters">
         <div style={{
           display: "flex", gap: "0.5rem",
           flexWrap: "wrap", alignItems: "flex-end",
@@ -87,14 +82,13 @@ export function OrderFilters() {
               Product
             </label>
             <div style={{ position: "relative" }}>
-              <Search size={12} style={{ position: "absolute", left: "0.5rem", top: "50%", transform: "translateY(-50%)", color: "#aaa", pointerEvents: "none" }} />
               <input
                 type="text"
                 value={search}
                 onChange={handleSearchChange}
                 placeholder="Search by product..."
                 style={{
-                  width: "100%", boxSizing: "border-box", padding: "0.5rem 0.5rem 0.5rem 1.6rem",
+                  width: "100%", boxSizing: "border-box", padding: "0.5rem",
                   fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)",
                   outline: "none", fontFamily: "inherit", color: "var(--color-text)",
                 }}
@@ -158,37 +152,23 @@ export function OrderFilters() {
             />
           </div>
 
-          <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
-            <button
-              type="submit"
-              title="Apply filters"
+          {hasFilters && (
+            <Link
+              href="/dashboard/orders"
+              onClick={() => { setSearch(""); setStatus(""); setFrom(""); setTo(""); }}
+              title="Clear all filters"
               style={{
                 width: "2.2rem", height: "2.2rem", borderRadius: "50%",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                background: "var(--color-primary)", color: "white", border: "none",
-                cursor: "pointer", padding: 0,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                color: "var(--color-text-muted)", border: "1px solid var(--color-border)",
+                textDecoration: "none", flexShrink: 0,
               }}
             >
-              <Search size={13} />
-            </button>
-            {hasFilters && (
-              <Link
-                href="/dashboard/orders"
-                onClick={() => { setSearch(""); setStatus(""); setFrom(""); setTo(""); }}
-                title="Clear all filters"
-                style={{
-                  width: "2.2rem", height: "2.2rem", borderRadius: "50%",
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  color: "var(--color-text-muted)", border: "1px solid var(--color-border)",
-                  textDecoration: "none",
-                }}
-              >
-                <X size={13} />
-              </Link>
-            )}
-          </div>
+              <X size={13} />
+            </Link>
+          )}
         </div>
-      </form>
+      </div>
     </div>
   );
 }

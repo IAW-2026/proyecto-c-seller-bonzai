@@ -56,8 +56,8 @@
 }
 
 .statIconWarning {
-  background: rgba(220, 38, 38, 0.08);
-  color: var(--color-error);
+  background: rgba(139, 115, 85, 0.08);
+  color: #8B7355;
 }
 
 .statInfo {
@@ -74,7 +74,7 @@
 }
 
 .statValueWarning {
-  color: var(--color-error);
+  color: #8B7355;
 }
 
 .statLabel {
@@ -388,7 +388,7 @@
   font-weight: 700;
   padding: 0.5rem 1rem;
   border: none;
-  background: var(--color-error);
+  background: #8B7355;
   color: white;
   cursor: pointer;
   transition: opacity 0.2s ease;

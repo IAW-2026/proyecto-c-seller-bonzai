@@ -61,7 +61,7 @@
 }
 
 .statCardWarning {
-  border-color: rgba(220, 38, 38, 0.15);
+  border-color: rgba(139, 115, 85, 0.15);
 }
 
 .statIcon {
@@ -76,13 +76,13 @@
 }
 
 .statIconWarning {
-  background: rgba(220, 38, 38, 0.08);
-  color: var(--color-error);
+  background: rgba(139, 115, 85, 0.08);
+  color: #8B7355;
 }
 
 .statIconPending {
-  background: rgba(217, 119, 6, 0.08);
-  color: #d97706;
+  background: rgba(139, 115, 85, 0.08);
+  color: #8B7355;
 }
 
 .statInfo {
@@ -99,7 +99,7 @@
 }
 
 .statValueWarning {
-  color: var(--color-error);
+  color: #8B7355;
 }
 
 .statLabel {

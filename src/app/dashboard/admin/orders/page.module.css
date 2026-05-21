@@ -218,9 +218,9 @@
 }
 
 .badgePENDING {
-  color: #d97706;
-  border-color: rgba(217, 119, 6, 0.2);
-  background: rgba(217, 119, 6, 0.05);
+  color: #8B7355;
+  border-color: rgba(139, 115, 85, 0.2);
+  background: rgba(139, 115, 85, 0.05);
 }
 
 .badgePAID {

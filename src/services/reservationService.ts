@@ -17,6 +17,10 @@ export async function createReservation(productId: string, quantity: number, ord
     return { success: false, error: "PRODUCT_SUSPENDED", message: "El producto está suspendido.", status: 409 };
   }
 
+  if (product.seller.suspended) {
+    return { success: false, error: "SELLER_SUSPENDED", message: "El vendedor está suspendido.", status: 409 };
+  }
+
   if (product.stock <= 0) {
     return { success: false, error: "OUT_OF_STOCK", message: "No hay stock disponible para este producto.", status: 409 };
   }

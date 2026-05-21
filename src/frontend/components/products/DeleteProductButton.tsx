@@ -82,7 +82,7 @@ export function DeleteProductButton({ productId, productName }: { productId: str
                 disabled={loading}
                 style={{
                   fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em",
-                  fontWeight: 600, padding: "0.5rem 1rem", background: "var(--color-error)",
+                  fontWeight: 600, padding: "0.5rem 1rem", background: "#8B7355",
                   color: "white", border: "none", cursor: loading ? "not-allowed" : "pointer",
                   opacity: loading ? 0.6 : 1,
                 }}

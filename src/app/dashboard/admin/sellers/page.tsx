@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Users, CheckCircle, XCircle, AlertCircle, X } from "lucide-react";
 import styles from "./page.module.css";
 
 interface Seller {
@@ -129,15 +129,32 @@ export default function AdminSellersPage() {
         </div>
       </div>
 
-      <div className={styles.searchBar}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "stretch", marginBottom: "1.5rem" }}>
         <input
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search sellers by email..."
-          className={styles.searchInput}
+          style={{
+            flex: 1, boxSizing: "border-box", padding: "0.6rem 0.75rem", fontSize: "0.85rem",
+            border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)",
+            outline: "none", fontFamily: "inherit", color: "var(--color-text)",
+            transition: "border-color 0.2s ease",
+          }}
+          onFocus={(e) => { e.target.style.borderColor = "var(--color-primary)"; }}
+          onBlur={(e) => { e.target.style.borderColor = "var(--color-border)"; }}
         />
-        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+        {search && (
+          <button type="button" onClick={() => { setSearch(""); setPage(1); }} title="Clear search"
+            style={{
+              width: "2.2rem", height: "2.2rem", borderRadius: "50%", alignSelf: "flex-end",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-text-muted)", border: "1px solid var(--color-border)",
+              background: "none", cursor: "pointer", padding: 0, flexShrink: 0,
+            }}>
+            <X size={13} />
+          </button>
+        )}
       </div>
 
       {loading ? (

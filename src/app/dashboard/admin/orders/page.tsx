@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
+import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package, X } from "lucide-react";
 import { OrderDetailsModal } from "../../../../frontend/components/orders/OrderDetailsModal";
 import styles from "./page.module.css";
 
@@ -47,11 +47,16 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
+const statusOptions = ["PENDING", "PAID", "AWAITING_TRACKING", "SHIPPED", "CANCELLED"];
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [totalOrders, setTotalOrders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
 
@@ -62,6 +67,9 @@ export default function AdminOrdersPage() {
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
+      if (statusFilter) params.set("status", statusFilter);
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
       params.set("page", String(page));
       params.set("limit", String(perPage));
       const res = await fetch(`/api/admin/orders?${params}`);
@@ -78,7 +86,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     fetchOrders();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search]);
+  }, [page, search, statusFilter, from, to]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -89,9 +97,34 @@ export default function AdminOrdersPage() {
     }, 300);
   };
 
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value);
+    setPage(1);
+  };
+
+  const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFrom(e.target.value);
+    setPage(1);
+  };
+
+  const handleToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTo(e.target.value);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setStatusFilter("");
+    setFrom("");
+    setTo("");
+    setPage(1);
+  };
+
+  const hasFilters = search || statusFilter || from || to;
+
   const allOrders = orders;
   const totalRevenue = allOrders
-    .filter((o) => o.status === "PAID" || o.status === "SHIPPED")
+    .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
 
   const pendingCount = allOrders.filter((o) => o.status === "PENDING").length;
@@ -130,15 +163,38 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <div className={styles.searchBar}>
-        <input
-          type="text"
-          value={search}
-          onChange={handleSearchChange}
-          placeholder="Search by order ID or status..."
-          className={styles.searchInput}
-        />
-        {search && <button type="button" className={styles.clearBtn} onClick={() => { setSearch(""); setPage(1); }}>Clear</button>}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div style={{ flex: "1 1 200px", minWidth: "160px" }}>
+            <label style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#aaa", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>Product</label>
+            <input type="text" value={search} onChange={handleSearchChange} placeholder="Search by product..."
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem", fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)", outline: "none", fontFamily: "inherit", color: "var(--color-text)" }} />
+          </div>
+          <div style={{ minWidth: "130px" }}>
+            <label style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#aaa", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>Status</label>
+            <select value={statusFilter} onChange={handleStatusChange}
+              style={{ width: "100%", padding: "0.5rem", fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)", outline: "none", fontFamily: "inherit", color: "var(--color-text)", background: "white", cursor: "pointer", accentColor: "var(--color-primary)" }}>
+              <option value="">All</option>
+              {statusOptions.map((s) => (<option key={s} value={s}>{s.replace(/_/g, " ")}</option>))}
+            </select>
+          </div>
+          <div style={{ minWidth: "130px" }}>
+            <label style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#aaa", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>From</label>
+            <input type="date" value={from} onChange={handleFromChange}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem", fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)", outline: "none", fontFamily: "inherit", color: "var(--color-text)", colorScheme: "light", accentColor: "var(--color-primary)" }} />
+          </div>
+          <div style={{ minWidth: "130px" }}>
+            <label style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#aaa", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>To</label>
+            <input type="date" value={to} onChange={handleToChange}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.5rem", fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)", outline: "none", fontFamily: "inherit", color: "var(--color-text)", colorScheme: "light", accentColor: "var(--color-primary)" }} />
+          </div>
+          {hasFilters && (
+            <button onClick={clearFilters} title="Clear filters"
+              style={{ width: "2.2rem", height: "2.2rem", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-muted)", border: "1px solid var(--color-border)", background: "none", cursor: "pointer", padding: 0 }}>
+              <X size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (

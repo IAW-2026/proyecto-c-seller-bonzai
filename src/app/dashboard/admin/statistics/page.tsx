@@ -41,8 +41,9 @@ interface AdminStatData {
 }
 
 function formatMonth(m: string) {
-  const d = new Date(m + "-01");
-  return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  const [y, monthNum] = m.split("-").map(Number);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[monthNum - 1]} ${String(y).slice(2)}`;
 }
 
 function formatCurrency(n: number) {
@@ -83,7 +84,7 @@ export default function AdminStatisticsPage() {
   ];
 
   const orderStatusData = [
-    { name: "Pending", value: summary.pendingOrders, color: "#d97706" },
+    { name: "Pending", value: summary.pendingOrders, color: "#8B7355" },
     { name: "Paid", value: summary.totalOrders - summary.pendingOrders - summary.shippedOrders - summary.cancelledOrders, color: "#16a34a" },
     { name: "Shipped", value: summary.shippedOrders, color: "#1B3D2F" },
     { name: "Cancelled", value: summary.cancelledOrders, color: "#dc2626" },
@@ -138,7 +139,7 @@ export default function AdminStatisticsPage() {
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={revenueTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-              <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} />
+              <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} angle={-30} textAnchor="end" height={50} />
               <YAxis fontSize={12} tickFormatter={(v) => `$${v}`} />
               <Tooltip
                 contentStyle={tooltipStyle}
@@ -155,7 +156,7 @@ export default function AdminStatisticsPage() {
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={monthlyOrders}>
               <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-              <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} />
+              <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} angle={-30} textAnchor="end" height={50} />
               <YAxis fontSize={12} allowDecimals={false} />
               <Tooltip
                 contentStyle={tooltipStyle}

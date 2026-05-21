@@ -1,8 +1,11 @@
 import { prisma } from "../lib/prisma";
 import type { Product, Prisma } from "@prisma/client";
 
-export async function findProductById(id: string): Promise<Product | null> {
-  return prisma.product.findUnique({ where: { id } });
+export async function findProductById(id: string) {
+  return prisma.product.findUnique({
+    where: { id },
+    include: { seller: true },
+  });
 }
 
 export async function findProductBySellerId(sellerId: string, isActive = true): Promise<Product[]> {

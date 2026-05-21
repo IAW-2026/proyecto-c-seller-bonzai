@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { XCircle } from "lucide-react";
+import { X } from "lucide-react";
 
-export function CancelOrderButton({ orderId }: { orderId: string }) {
+export function CancelOrderButton({ orderId, iconOnly }: { orderId: string; iconOnly?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,22 +34,26 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
           textTransform: "uppercase",
           letterSpacing: "0.1em",
           fontWeight: 600,
-          padding: "0.4rem 0.75rem",
+          padding: iconOnly ? "0.4rem 0.5rem" : "0.4rem 0.75rem",
           background: "none",
-          border: "1px solid rgba(217,119,6,0.3)",
-          color: "#d97706",
+          border: "1px solid rgba(139,115,85,0.3)",
+          borderRadius: 0,
+          color: "#8B7355",
           cursor: loading ? "not-allowed" : "pointer",
           opacity: loading ? 0.6 : 1,
           display: "inline-flex",
           alignItems: "center",
+          justifyContent: "center",
           gap: "0.3rem",
+          lineHeight: 1,
           transition: "background 0.2s, border-color 0.2s",
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(217,119,6,0.08)"; e.currentTarget.style.borderColor = "rgba(217,119,6,0.5)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(217,119,6,0.3)"; }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(139,115,85,0.08)"; e.currentTarget.style.borderColor = "rgba(139,115,85,0.5)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(139,115,85,0.3)"; }}
+        title="Cancel order"
       >
-        <XCircle size={12} />
-        Cancel
+        <X size={iconOnly ? 14 : 12} />
+        {!iconOnly && "Cancel"}
       </button>
       {open && (
         <div
@@ -91,13 +95,13 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
                 disabled={loading}
                 style={{
                   fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em",
-                  fontWeight: 600, padding: "0.5rem 1rem", background: "#d97706",
+                  fontWeight: 600, padding: "0.5rem 1rem", background: "#8B7355",
                   color: "white", border: "none", cursor: loading ? "not-allowed" : "pointer",
                   opacity: loading ? 0.6 : 1,
                   transition: "background 0.2s",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#b85e00"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#d97706"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#9A8060"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#8B7355"; }}
               >
                 {loading ? "Cancelling..." : "Cancel Order"}
               </button>
