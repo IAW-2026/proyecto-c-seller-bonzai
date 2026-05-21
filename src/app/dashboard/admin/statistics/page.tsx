@@ -10,6 +10,14 @@ import styles from "./page.module.css";
 
 const COLORS = ["#1B3D2F", "#2D6A4F", "#40916C", "#52B788", "#74C69D", "#95D5B2", "#B7E4C7", "#D8F3DC"];
 
+const tooltipStyle: React.CSSProperties = {
+  background: "white",
+  border: "1.5px solid rgba(27, 61, 47, 0.15)",
+  borderRadius: "8px",
+  fontSize: "0.8rem",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+};
+
 interface AdminStatData {
   summary: {
     totalSellers: number;
@@ -111,6 +119,7 @@ export default function AdminStatisticsPage() {
               <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} />
               <YAxis fontSize={12} tickFormatter={(v) => `$${v}`} />
               <Tooltip
+                contentStyle={tooltipStyle}
                 formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
                 labelFormatter={formatMonth}
               />
@@ -127,6 +136,7 @@ export default function AdminStatisticsPage() {
               <XAxis dataKey="month" tickFormatter={formatMonth} fontSize={12} />
               <YAxis fontSize={12} allowDecimals={false} />
               <Tooltip
+                contentStyle={tooltipStyle}
                 formatter={(value: number) => [value, "Orders"]}
                 labelFormatter={formatMonth}
               />
@@ -142,7 +152,7 @@ export default function AdminStatisticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
               <XAxis type="number" fontSize={12} tickFormatter={(v) => `$${v}`} />
               <YAxis type="category" dataKey="name" fontSize={11} width={120} />
-              <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
               <Bar dataKey="revenue" fill="#40916C" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -165,7 +175,7 @@ export default function AdminStatisticsPage() {
                   <Cell key={i} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => [value, "Orders"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [value, "Orders"]} />
               <Legend wrapperStyle={{ fontSize: "11px" }} />
             </PieChart>
           </ResponsiveContainer>
@@ -179,7 +189,7 @@ export default function AdminStatisticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                 <XAxis type="number" fontSize={12} tickFormatter={(v) => `$${v}`} />
                 <YAxis type="category" dataKey="email" fontSize={10} width={180} tickFormatter={(v) => v.length > 18 ? v.slice(0, 18) + "..." : v} />
-                <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
                 <Bar dataKey="revenue" fill="#52B788" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -203,7 +213,7 @@ export default function AdminStatisticsPage() {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => [value, "Units sold"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [value, "Units sold"]} />
               <Legend
                 wrapperStyle={{ fontSize: "11px" }}
                 formatter={(value) => (value.length > 14 ? value.slice(0, 14) + "..." : value)}
