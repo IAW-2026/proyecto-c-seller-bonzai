@@ -97,11 +97,30 @@
 
 .tableWrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(27,61,47,0.2) rgba(27,61,47,0.04);
   border: 1px solid var(--color-border);
 }
 
+.tableWrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: rgba(27, 61, 47, 0.04);
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: rgba(27, 61, 47, 0.2);
+  border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(27, 61, 47, 0.35);
+}
+
 .table {
-  min-width: 640px;
+  min-width: 700px;
 }
 
 .tableHeader {

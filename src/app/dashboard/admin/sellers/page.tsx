@@ -50,6 +50,18 @@ export default function AdminSellersPage() {
     }
   };
 
+  const handleUnsuspend = async (clerkId: string) => {
+    setActionLoading(clerkId);
+    try {
+      await fetch(`/api/admin/sellers/${clerkId}/unsuspend`, { method: "POST" });
+      await fetchSellers();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleSuspend = async (clerkId: string) => {
     setActionLoading(clerkId);
     try {
@@ -188,7 +200,7 @@ export default function AdminSellersPage() {
                     )}
                     {seller.suspended && (
                       <button
-                        onClick={() => handleApprove(seller.clerkId)}
+                        onClick={() => handleUnsuspend(seller.clerkId)}
                         disabled={actionLoading === seller.clerkId}
                         className={`${styles.actionBtn} ${styles.actionReactivate}`}
                       >

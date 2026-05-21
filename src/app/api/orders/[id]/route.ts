@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import * as orderService from "../../../../services/orderService";
 import { getSellerId } from "../../../../lib/auth-helpers";
+import { cancelOrderSchema } from "../../../../validators/order-cancel";
 
 export async function PATCH(
   req: Request,
@@ -64,7 +65,18 @@ export async function DELETE(
 
     const { id } = await context.params;
 
-    const result = await orderService.cancelOrder(id);
+    let reason: string | undefined;
+    try {
+      const body = await req.json();
+      const parsed = cancelOrderSchema.safeParse(body);
+      if (parsed.success) {
+        reason = parsed.data.reason;
+      }
+    } catch {
+      // no body or invalid JSON — reason is optional
+    }
+
+    const result = await orderService.cancelOrder(id, reason);
 
     if (!result.success) {
       return NextResponse.json(

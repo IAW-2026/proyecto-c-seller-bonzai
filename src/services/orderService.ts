@@ -77,7 +77,7 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
   return { success: true, orderId: finalOrderId, status: 201 };
 }
 
-export async function cancelOrder(orderId: string) {
+export async function cancelOrder(orderId: string, reason?: string) {
   const order = await orderRepo.findOrderById(orderId);
 
   if (!order) {
@@ -88,7 +88,7 @@ export async function cancelOrder(orderId: string) {
     return { success: false, error: "ORDER_ALREADY_CANCELLED", message: "La orden ya fue cancelada previamente.", status: 409 };
   }
 
-  await orderRepo.cancelOrderWithStockRestore(orderId);
+  await orderRepo.cancelOrderWithStockRestore(orderId, reason);
 
   return { success: true };
 }

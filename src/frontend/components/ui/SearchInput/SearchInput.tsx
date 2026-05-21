@@ -1,52 +1,47 @@
 "use client";
 
-import { useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import styles from "./SearchInput.module.css";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-interface SearchInputProps {
-  placeholder?: string;
-  basePath: string;
-  defaultValue?: string;
-}
-
-export function SearchInput({ placeholder = "Search...", basePath, defaultValue = "" }: SearchInputProps) {
+export function SearchInput({ defaultValue, placeholder }: { defaultValue?: string; placeholder?: string }) {
   const router = useRouter();
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const navigate = useCallback(
-    (value: string) => {
-      const params = new URLSearchParams();
-      if (value) params.set("search", value);
-      params.set("page", "1");
-      router.push(`${basePath}?${params.toString()}`);
-    },
-    [router, basePath]
-  );
+  const searchParams = useSearchParams();
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => navigate(value), 300);
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) {
+        params.set("search", value);
+      } else {
+        params.delete("search");
+      }
+      params.set("page", "1");
+      router.push(`?${params.toString()}`);
     },
-    [navigate]
+    [router, searchParams]
   );
 
   return (
-    <div className={styles.wrap}>
-      <input
-        type="text"
-        defaultValue={defaultValue}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className={styles.input}
-      />
-      {defaultValue && (
-        <button type="button" className={styles.clear} onClick={() => navigate("")}>
-          Clear
-        </button>
-      )}
-    </div>
+    <input
+      type="text"
+      defaultValue={defaultValue || ""}
+      onChange={handleChange}
+      placeholder={placeholder || "Search..."}
+      style={{
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "0.6rem 0.75rem",
+        fontSize: "0.85rem",
+        border: "1.5px solid var(--color-border)",
+        borderRadius: "var(--radius-lg)",
+        outline: "none",
+        fontFamily: "inherit",
+        color: "var(--color-text)",
+        transition: "border-color 0.2s ease",
+      }}
+      onFocus={(e) => { e.target.style.borderColor = "var(--color-primary)"; }}
+      onBlur={(e) => { e.target.style.borderColor = "var(--color-border)"; }}
+    />
   );
 }

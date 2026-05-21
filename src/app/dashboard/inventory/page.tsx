@@ -2,8 +2,11 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Package, Layers, CircleAlert, Plus, Pencil } from "lucide-react";
+import { Package, Layers, CircleAlert, Plus, Pencil, Eye } from "lucide-react";
 import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
+import { DeleteProductButton } from "../../../frontend/components/products/DeleteProductButton";
+import { ProductPreviewModal } from "../../../frontend/components/products/ProductPreviewModal";
+import { ProductRowClient } from "../../../frontend/components/products/ProductRowClient";
 import styles from "./page.module.css";
 
 export default async function InventoryPage(props: { searchParams?: Promise<{ search?: string; page?: string }> }) {
@@ -30,18 +33,11 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
     where.name = { contains: search, mode: "insensitive" };
   }
 
+  const include = { category: true } as const;
   const [products, total, allProducts] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit,
-    }),
+    prisma.product.findMany({ where, orderBy: { createdAt: "desc" }, include, skip, take: limit }),
     prisma.product.count({ where }),
-    prisma.product.findMany({
-      where: { sellerId: profile.id, isActive: true },
-      orderBy: { createdAt: "desc" },
-    }),
+    prisma.product.findMany({ where: { sellerId: profile.id, isActive: true }, orderBy: { createdAt: "desc" }, include }),
   ]);
 
   const totalPages = Math.ceil(total / limit);
@@ -94,7 +90,9 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
         </div>
       </div>
 
-      <SearchInput basePath="/dashboard/inventory" defaultValue={search} placeholder="Search products..." />
+      <div style={{ marginBottom: "1.5rem" }}>
+        <SearchInput defaultValue={search} placeholder="Search products..." />
+      </div>
 
       {total === 0 ? (
         <div className={styles.empty}>
@@ -112,7 +110,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
                 <span className={styles.tableHeaderCell}>Status</span>
               </div>
               {products.map((product) => (
-                <div key={product.id} className={styles.tableRow}>
+                <ProductRowClient key={product.id} className={styles.tableRow}>
                   <div className={styles.tableCell}>
                     <div className={styles.productInfo}>
                       <div className={styles.productImage}>
@@ -123,15 +121,20 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
                             <Package size={14} />
                           </div>
                         )}
+                        <ProductPreviewModal product={product}>
+                          <div className={styles.imagePreviewOverlay}>
+                            <Eye size={12} />
+                          </div>
+                        </ProductPreviewModal>
                       </div>
                       <div>
-                        <Link href={`/dashboard/inventory/${product.id}/edit`} className={styles.productNameLink}>
-                          <span className={styles.productName}>{product.name}</span>
-                          <Pencil size={10} className={styles.editIcon} />
-                        </Link>
-                        {product.description && (
-                          <span className={styles.productDesc}>{product.description}</span>
-                        )}
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                          <Link href={`/dashboard/inventory/${product.id}/edit`} className={styles.productNameLink}>
+                            <span className={styles.productName}>{product.name}</span>
+                            <Pencil size={10} className={styles.editIcon} />
+                          </Link>
+                          <DeleteProductButton productId={product.id} productName={product.name} />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -148,7 +151,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
                       {product.stock > 0 ? "Active" : "Depleted"}
                     </span>
                   </div>
-                </div>
+                </ProductRowClient>
               ))}
             </div>
           </div>

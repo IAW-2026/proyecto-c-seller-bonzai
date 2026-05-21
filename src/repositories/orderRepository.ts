@@ -49,7 +49,7 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   });
 }
 
-export async function cancelOrderWithStockRestore(id: string): Promise<Order> {
+export async function cancelOrderWithStockRestore(id: string, reason?: string): Promise<Order> {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id },
@@ -67,7 +67,7 @@ export async function cancelOrderWithStockRestore(id: string): Promise<Order> {
 
     return tx.order.update({
       where: { id },
-      data: { status: OrderStatus.CANCELLED },
+      data: { status: OrderStatus.CANCELLED, cancellationReason: reason },
     });
   });
 }

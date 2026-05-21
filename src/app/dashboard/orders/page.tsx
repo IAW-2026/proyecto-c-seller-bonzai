@@ -106,7 +106,9 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
         </div>
       </div>
 
-      <SearchInput basePath="/dashboard/orders" defaultValue={search} placeholder="Filter by status (pending, paid, shipped, cancelled)..." />
+      <div style={{ marginBottom: "1.5rem" }}>
+        <SearchInput defaultValue={search} placeholder="Filter by status (pending, paid, shipped, cancelled)..." />
+      </div>
 
       {total === 0 ? (
         <div className={styles.empty}>

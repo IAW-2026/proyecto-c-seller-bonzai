@@ -3,6 +3,7 @@ import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Calendar, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
 import styles from "./page.module.css";
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -19,7 +20,7 @@ const statusLabels: Record<string, string> = {
   EXPIRED: "Expired",
 };
 
-export default async function ReservationsPage(props: { searchParams?: Promise<{ page?: string }> }) {
+export default async function ReservationsPage(props: { searchParams?: Promise<{ search?: string; page?: string }> }) {
   const { userId } = await auth();
   const user = await currentUser();
 
@@ -33,6 +34,7 @@ export default async function ReservationsPage(props: { searchParams?: Promise<{
   }
 
   const searchParams = await props.searchParams;
+  const search = searchParams?.search?.toLowerCase() || "";
   const page = parseInt(searchParams?.page || "1", 10) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;
@@ -41,8 +43,13 @@ export default async function ReservationsPage(props: { searchParams?: Promise<{
   const { releaseExpiredReservationsInBatch } = await import("../../../repositories/reservationRepository");
   await releaseExpiredReservationsInBatch();
 
+  const productWhere: Record<string, unknown> = { sellerId: profile.id, isActive: true };
+  if (search) {
+    productWhere.name = { contains: search, mode: "insensitive" };
+  }
+
   const products = await prisma.product.findMany({
-    where: { sellerId: profile.id, isActive: true },
+    where: productWhere,
     select: { id: true, name: true },
   });
 
@@ -96,6 +103,10 @@ export default async function ReservationsPage(props: { searchParams?: Promise<{
         </div>
       </div>
 
+      <div style={{ marginBottom: "1.5rem" }}>
+        <SearchInput defaultValue={search} placeholder="Search by product name..." />
+      </div>
+
       {total === 0 ? (
         <div className={styles.empty}>
           <p className={styles.emptyText}>No reservations yet</p>
@@ -143,13 +154,13 @@ export default async function ReservationsPage(props: { searchParams?: Promise<{
           {totalPages > 1 && (
             <div className={styles.pagination}>
               {page > 1 && (
-                <Link href={`/dashboard/reservations?${new URLSearchParams({ page: String(page - 1) })}`} className={styles.pageLink}>
+                <Link href={`/dashboard/reservations?${new URLSearchParams({ ...(search ? { search } : {}), page: String(page - 1) })}`} className={styles.pageLink}>
                   Previous
                 </Link>
               )}
               <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
               {page < totalPages && (
-                <Link href={`/dashboard/reservations?${new URLSearchParams({ page: String(page + 1) })}`} className={styles.pageLink}>
+                <Link href={`/dashboard/reservations?${new URLSearchParams({ ...(search ? { search } : {}), page: String(page + 1) })}`} className={styles.pageLink}>
                   Next
                 </Link>
               )}
