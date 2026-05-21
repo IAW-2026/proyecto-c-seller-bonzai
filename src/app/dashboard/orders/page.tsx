@@ -6,7 +6,7 @@ import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package } 
 import { ShipButton } from "../../../frontend/components/orders/ShipButton";
 import { CancelOrderButton } from "../../../frontend/components/orders/CancelOrderButton";
 import { OrderDetailsModal } from "../../../frontend/components/orders/OrderDetailsModal";
-import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
+import { OrderFilters } from "../../../frontend/components/orders/OrderFilters";
 import styles from "./page.module.css";
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -25,7 +25,7 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
-export default async function OrdersPage(props: { searchParams?: Promise<{ search?: string; page?: string }> }) {
+export default async function OrdersPage(props: { searchParams?: Promise<{ search?: string; status?: string; from?: string; to?: string; page?: string }> }) {
   const { userId } = await auth();
   const user = await currentUser();
 
@@ -40,17 +40,29 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
 
   const searchParams = await props.searchParams;
   const search = searchParams?.search?.toLowerCase() || "";
+  const statusFilter = searchParams?.status || "";
+  const from = searchParams?.from || "";
+  const to = searchParams?.to || "";
   const page = parseInt(searchParams?.page || "1", 10) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const validStatuses = ["PENDING", "PAID", "AWAITING_TRACKING", "SHIPPED", "CANCELLED"];
   const where: Record<string, unknown> = { sellerId: profile.id };
-  if (search && validStatuses.includes(search.toUpperCase())) {
-    where.status = search.toUpperCase();
+  if (statusFilter) {
+    where.status = statusFilter;
   }
-
-  const [orders, total, allOrders] = await Promise.all([
+  if (search) {
+    where.items = { some: { productName: { contains: search, mode: "insensitive" } } };
+  }
+  if (from) {
+    where.createdAt = { ...(where.createdAt as object || {}), gte: new Date(from) };
+  }
+  if (to) {
+    const toEnd = new Date(to);
+    toEnd.setDate(toEnd.getDate() + 1);
+    where.createdAt = { ...(where.createdAt as object || {}), lt: toEnd };
+  }
+  const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: { items: true },
@@ -59,14 +71,11 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
       take: limit,
     }),
     prisma.order.count({ where }),
-    search
-      ? prisma.order.findMany({ where: { sellerId: profile.id }, include: { items: true }, orderBy: { createdAt: "desc" } })
-      : null,
   ]);
 
   const totalPages = Math.ceil(total / limit);
 
-  const statsOrders = allOrders || orders;
+  const statsOrders = orders;
   const totalRevenue = statsOrders
     .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
@@ -107,9 +116,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
         </div>
       </div>
 
-      <div style={{ marginBottom: "1.5rem" }}>
-        <SearchInput defaultValue={search} placeholder="Filter by status (pending, paid, shipped, cancelled)..." />
-      </div>
+      <OrderFilters />
 
       {total === 0 ? (
         <div className={styles.empty}>
@@ -197,17 +204,37 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
           </div>
           {totalPages > 1 && (
             <div className={styles.pagination}>
-              {page > 1 && (
-                <Link href={`/dashboard/orders?${new URLSearchParams({ page: String(page - 1), ...(search ? { search } : {}) })}`} className={styles.pageLink}>
-                  Previous
-                </Link>
-              )}
+              {(() => {
+                const params = new URLSearchParams();
+                if (search) params.set("search", search);
+                if (statusFilter) params.set("status", statusFilter);
+                if (from) params.set("from", from);
+                if (to) params.set("to", to);
+                params.set("page", String(page - 1));
+                return (
+                  page > 1 && (
+                    <Link href={`/dashboard/orders?${params.toString()}`} className={styles.pageLink}>
+                      Previous
+                    </Link>
+                  )
+                );
+              })()}
               <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-              {page < totalPages && (
-                <Link href={`/dashboard/orders?${new URLSearchParams({ page: String(page + 1), ...(search ? { search } : {}) })}`} className={styles.pageLink}>
-                  Next
-                </Link>
-              )}
+              {(() => {
+                const params = new URLSearchParams();
+                if (search) params.set("search", search);
+                if (statusFilter) params.set("status", statusFilter);
+                if (from) params.set("from", from);
+                if (to) params.set("to", to);
+                params.set("page", String(page + 1));
+                return (
+                  page < totalPages && (
+                    <Link href={`/dashboard/orders?${params.toString()}`} className={styles.pageLink}>
+                      Next
+                    </Link>
+                  )
+                );
+              })()}
             </div>
           )}
         </>

@@ -50,6 +50,14 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
       return { success: false, error: "PRODUCT_INACTIVE", message: `El producto ${product.name} no está disponible.`, status: 409 };
     }
 
+    if (product.suspended) {
+      return { success: false, error: "PRODUCT_SUSPENDED", message: `El producto ${product.name} está suspendido.`, status: 409 };
+    }
+
+    if (product.stock <= 0) {
+      return { success: false, error: "OUT_OF_STOCK", message: `El producto ${product.name} no tiene stock disponible.`, status: 409 };
+    }
+
     const quantity = reservation.quantity;
     const unitPrice = product.price;
     const subtotal = unitPrice * quantity;
