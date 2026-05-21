@@ -10,6 +10,7 @@ datasource db {
 enum OrderStatus {
   PENDING
   PAID
+  AWAITING_TRACKING
   SHIPPED
   CANCELLED
 }

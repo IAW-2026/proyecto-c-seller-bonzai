@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     }));
 
     const totalRevenue = orders
-      .filter((o) => o.status === "PAID")
+      .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
       .reduce((sum, o) => sum + o.total, 0);
 
     return NextResponse.json({ orders: ordersWithEmail, totalRevenue, total });

@@ -13,14 +13,7 @@ export async function PATCH(
     const body = await req.json();
 
     if (body.action === "ship") {
-      if (!body.trackingId) {
-        return NextResponse.json(
-          { error: "INVALID_REQUEST", message: "trackingId is required." },
-          { status: 400 }
-        );
-      }
-
-      const result = await orderService.shipOrder(id, body.trackingId);
+      const result = await orderService.shipOrder(id);
 
       if (!result.success) {
         return NextResponse.json(

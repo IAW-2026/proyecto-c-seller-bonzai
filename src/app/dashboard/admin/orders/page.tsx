@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
+import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
 import { OrderDetailsModal } from "../../../../frontend/components/orders/OrderDetailsModal";
 import styles from "./page.module.css";
 
@@ -21,6 +21,7 @@ interface Order {
   status: string;
   total: number;
   transactionId: string | null;
+  trackingId: string | null;
   createdAt: string;
   items: OrderItem[];
 }
@@ -28,6 +29,7 @@ interface Order {
 const statusIcons: Record<string, React.ReactNode> = {
   PENDING: <Clock size={14} />,
   PAID: <CheckCircle size={14} />,
+  AWAITING_TRACKING: <Package size={14} />,
   SHIPPED: <Truck size={14} />,
   CANCELLED: <XCircle size={14} />,
 };
@@ -35,6 +37,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 const statusLabels: Record<string, string> = {
   PENDING: "Pending",
   PAID: "Paid",
+  AWAITING_TRACKING: "Awaiting",
   SHIPPED: "Shipped",
   CANCELLED: "Cancelled",
 };
@@ -159,7 +162,7 @@ export default function AdminOrdersPage() {
                     status={order.status}
                     total={order.total}
                     createdAt={order.createdAt}
-                    trackingId={order.transactionId}
+                    trackingId={order.trackingId}
                     sellerEmail={order.sellerEmail}
                     items={order.items.map((i) => ({
                       productName: i.productName,

@@ -83,7 +83,14 @@ export async function confirmPayment(
   });
 }
 
-export async function shipOrder(id: string, trackingId: string): Promise<Order> {
+export async function shipToAwaitingTracking(id: string): Promise<Order> {
+  return prisma.order.update({
+    where: { id },
+    data: { status: OrderStatus.AWAITING_TRACKING },
+  });
+}
+
+export async function submitTracking(id: string, trackingId: string): Promise<Order> {
   return prisma.order.update({
     where: { id },
     data: { status: OrderStatus.SHIPPED, trackingId, shippedAt: new Date() },

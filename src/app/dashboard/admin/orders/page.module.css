@@ -222,6 +222,12 @@
   background: rgba(34, 84, 15, 0.05);
 }
 
+.badgeAWAITING_TRACKING {
+  color: #b8860b;
+  border-color: rgba(184, 134, 11, 0.2);
+  background: rgba(184, 134, 11, 0.05);
+}
+
 .searchBar {
   display: flex;
   gap: 0.5rem;

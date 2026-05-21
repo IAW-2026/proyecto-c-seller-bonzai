@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
+import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
 import { ShipButton } from "../../../frontend/components/orders/ShipButton";
 import { OrderDetailsModal } from "../../../frontend/components/orders/OrderDetailsModal";
 import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
@@ -11,6 +11,7 @@ import styles from "./page.module.css";
 const statusIcons: Record<string, React.ReactNode> = {
   PENDING: <Clock size={14} />,
   PAID: <CheckCircle size={14} />,
+  AWAITING_TRACKING: <Package size={14} />,
   SHIPPED: <Truck size={14} />,
   CANCELLED: <XCircle size={14} />,
 };
@@ -18,6 +19,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 const statusLabels: Record<string, string> = {
   PENDING: "Pending",
   PAID: "Paid",
+  AWAITING_TRACKING: "Awaiting",
   SHIPPED: "Shipped",
   CANCELLED: "Cancelled",
 };
@@ -41,7 +43,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const validStatuses = ["PENDING", "PAID", "SHIPPED", "CANCELLED"];
+  const validStatuses = ["PENDING", "PAID", "AWAITING_TRACKING", "SHIPPED", "CANCELLED"];
   const where: Record<string, unknown> = { sellerId: profile.id };
   if (search && validStatuses.includes(search.toUpperCase())) {
     where.status = search.toUpperCase();
@@ -65,7 +67,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
 
   const statsOrders = allOrders || orders;
   const totalRevenue = statsOrders
-    .filter((o) => o.status === "PAID" || o.status === "SHIPPED")
+    .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
     .reduce((sum, o) => sum + o.total, 0);
   const pendingOrders = statsOrders.filter((o) => o.status === "PENDING").length;
 
@@ -168,6 +170,8 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                   <div className={styles.tableCell}>
                     {order.status === "PAID" ? (
                       <ShipButton orderId={order.id} />
+                    ) : order.status === "AWAITING_TRACKING" ? (
+                      <span style={{ fontSize: "0.75rem", color: "#b8860b" }}>Awaiting tracking</span>
                     ) : order.status === "SHIPPED" && order.trackingId ? (
                       <span className={styles.trackingId}>Track: {order.trackingId}</span>
                     ) : null}

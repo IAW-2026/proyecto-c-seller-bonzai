@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { X, Clock, CheckCircle, Truck, XCircle } from "lucide-react";
+import { X, Clock, CheckCircle, Truck, XCircle, Package } from "lucide-react";
 
 interface OrderItem {
   productName: string;
@@ -24,6 +24,7 @@ interface OrderDetailsModalProps {
 const statusLabels: Record<string, string> = {
   PENDING: "Pending",
   PAID: "Paid",
+  AWAITING_TRACKING: "Awaiting",
   SHIPPED: "Shipped",
   CANCELLED: "Cancelled",
 };
@@ -31,6 +32,7 @@ const statusLabels: Record<string, string> = {
 const statusIcons: Record<string, React.ReactNode> = {
   PENDING: <Clock size={14} />,
   PAID: <CheckCircle size={14} />,
+  AWAITING_TRACKING: <Package size={14} />,
   SHIPPED: <Truck size={14} />,
   CANCELLED: <XCircle size={14} />,
 };
@@ -91,9 +93,9 @@ export function OrderDetailsModal({ orderId, status, total, createdAt, trackingI
             </div>
 
             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, padding: "0.25rem 0.5rem", border: "1px solid", marginBottom: "1.25rem",
-              color: status === "PENDING" ? "#2563eb" : status === "PAID" ? "var(--color-success)" : status === "SHIPPED" ? "var(--color-primary)" : "var(--color-error)",
-              borderColor: status === "PENDING" ? "rgba(37,99,235,0.2)" : status === "PAID" ? "rgba(22,163,74,0.2)" : status === "SHIPPED" ? "rgba(27,61,47,0.2)" : "rgba(220,38,38,0.2)",
-              background: status === "PENDING" ? "rgba(37,99,235,0.05)" : status === "PAID" ? "rgba(22,163,74,0.05)" : status === "SHIPPED" ? "rgba(27,61,47,0.05)" : "rgba(220,38,38,0.05)",
+              color: status === "PENDING" ? "#2563eb" : status === "PAID" ? "var(--color-success)" : status === "AWAITING_TRACKING" ? "#b8860b" : status === "SHIPPED" ? "var(--color-primary)" : "var(--color-error)",
+              borderColor: status === "PENDING" ? "rgba(37,99,235,0.2)" : status === "PAID" ? "rgba(22,163,74,0.2)" : status === "AWAITING_TRACKING" ? "rgba(184,134,11,0.2)" : status === "SHIPPED" ? "rgba(27,61,47,0.2)" : "rgba(220,38,38,0.2)",
+              background: status === "PENDING" ? "rgba(37,99,235,0.05)" : status === "PAID" ? "rgba(22,163,74,0.05)" : status === "AWAITING_TRACKING" ? "rgba(184,134,11,0.05)" : status === "SHIPPED" ? "rgba(27,61,47,0.05)" : "rgba(220,38,38,0.05)",
             }}>
               {statusIcons[status]}
               {statusLabels[status] || status}

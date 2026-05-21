@@ -119,7 +119,7 @@ export async function confirmPayment(orderId: string, transactionId: string, pai
   };
 }
 
-export async function shipOrder(orderId: string, trackingId: string) {
+export async function shipOrder(orderId: string) {
   const order = await orderRepo.findOrderById(orderId);
 
   if (!order) {
@@ -130,15 +130,31 @@ export async function shipOrder(orderId: string, trackingId: string) {
     return { success: false, error: "ORDER_CANCELLED", message: "Cannot ship a cancelled order.", status: 409 };
   }
 
-  if (order.status === OrderStatus.SHIPPED) {
-    return { success: false, error: "ALREADY_SHIPPED", message: "Order is already shipped.", status: 409 };
+  if (order.status === OrderStatus.SHIPPED || order.status === OrderStatus.AWAITING_TRACKING) {
+    return { success: false, error: "ALREADY_SHIPPED", message: "Order is already shipped or awaiting tracking.", status: 409 };
   }
 
   if (order.status === OrderStatus.PENDING) {
     return { success: false, error: "ORDER_NOT_PAID", message: "Order must be paid before shipping.", status: 409 };
   }
 
-  await orderRepo.shipOrder(orderId, trackingId);
+  await orderRepo.shipToAwaitingTracking(orderId);
+
+  return { success: true, orderId, newStatus: OrderStatus.AWAITING_TRACKING };
+}
+
+export async function submitTracking(orderId: string, trackingId: string) {
+  const order = await orderRepo.findOrderById(orderId);
+
+  if (!order) {
+    return { success: false, error: "ORDER_NOT_FOUND", message: "Order not found.", status: 404 };
+  }
+
+  if (order.status !== OrderStatus.AWAITING_TRACKING) {
+    return { success: false, error: "INVALID_STATUS", message: "Order is not awaiting tracking.", status: 409 };
+  }
+
+  await orderRepo.submitTracking(orderId, trackingId);
 
   return { success: true, orderId, newStatus: OrderStatus.SHIPPED };
 }
