@@ -6,6 +6,8 @@ import {
   LineChart, Line, PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { Package, ShoppingBag, DollarSign, Clock, Truck, XCircle, Layers } from "lucide-react";
+import { StatisticsSkeleton } from "../../../frontend/components/statistics/StatisticsSkeleton";
+import { ExportCsvButton } from "../../../frontend/components/ui/ExportCsvButton";
 import styles from "./page.module.css";
 
 const COLORS = ["#1B3D2F", "#2D6A4F", "#40916C", "#52B788", "#74C69D", "#95D5B2", "#B7E4C7", "#D8F3DC"];
@@ -57,7 +59,7 @@ export default function StatisticsPage() {
   }, []);
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.spinner} /></div>;
+    return <StatisticsSkeleton />;
   }
 
   if (!data) {
@@ -81,7 +83,25 @@ export default function StatisticsPage() {
         <h1 className={styles.title}>
           Sales <span className={styles.italic}>Statistics</span>
         </h1>
-        <p className={styles.welcome}>Performance overview for your store</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <p className={styles.welcome}>Performance overview for your store</p>
+          {data && (
+            <ExportCsvButton
+              filename="statistics.csv"
+              headers={["Metric", "Value"]}
+              rows={[
+                ["Total Products", String(summary.totalProducts)],
+                ["Total Orders", String(summary.totalOrders)],
+                ["Total Revenue", summary.totalRevenue.toFixed(2)],
+                ["Paid Orders", String(summary.paidOrders)],
+                ["Pending Orders", String(summary.pendingOrders)],
+                ["Shipped Orders", String(summary.shippedOrders)],
+                ["Cancelled Orders", String(summary.cancelledOrders)],
+                ["Total Stock", String(summary.totalStock)],
+              ]}
+            />
+          )}
+        </div>
       </header>
 
       <div className={styles.grid}>

@@ -7,6 +7,7 @@ import { ShipButton } from "../../../frontend/components/orders/ShipButton";
 import { CancelOrderButton } from "../../../frontend/components/orders/CancelOrderButton";
 import { OrderDetailsModal } from "../../../frontend/components/orders/OrderDetailsModal";
 import { OrderFilters } from "../../../frontend/components/orders/OrderFilters";
+import { ExportCsvButton } from "../../../frontend/components/ui/ExportCsvButton";
 import styles from "./page.module.css";
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -87,9 +88,26 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
         <h1 className={styles.title}>
           Customer <span className={styles.italic}>Orders</span>
         </h1>
-        <p className={styles.welcome}>
-          {total} order{total !== 1 ? "s" : ""} received
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <p className={styles.welcome}>
+            {total} order{total !== 1 ? "s" : ""} received
+          </p>
+          {orders.length > 0 && (
+            <ExportCsvButton
+              filename="orders.csv"
+              headers={["Order ID", "Items", "Total", "Status", "Date", "Buyer ID", "Tracking ID"]}
+              rows={orders.map((o) => [
+                o.id.slice(0, 8),
+                String(o.items.reduce((s, i) => s + i.quantity, 0)),
+                o.total.toFixed(2),
+                o.status,
+                o.createdAt.toISOString().slice(0, 10),
+                o.buyerId,
+                o.trackingId || "",
+              ])}
+            />
+          )}
+        </div>
       </header>
 
       <div className={styles.stats}>

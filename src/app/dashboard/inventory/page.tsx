@@ -8,6 +8,7 @@ import { DeleteProductButton } from "../../../frontend/components/products/Delet
 import { ToggleProductButton } from "../../../frontend/components/products/ToggleProductButton";
 import { ProductPreviewModal } from "../../../frontend/components/products/ProductPreviewModal";
 import { ProductRowClient } from "../../../frontend/components/products/ProductRowClient";
+import { ExportCsvButton } from "../../../frontend/components/ui/ExportCsvButton";
 import styles from "./page.module.css";
 
 export default async function InventoryPage(props: { searchParams?: Promise<{ search?: string; page?: string }> }) {
@@ -58,10 +59,23 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
               {total} product{total !== 1 ? "s" : ""} in your catalog
             </p>
           </div>
-          <Link href="/dashboard/inventory/new" className={styles.addBtn}>
-            <Plus size={14} />
-            New Product
-          </Link>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <ExportCsvButton
+              filename="products.csv"
+              headers={["Name", "Price", "Stock", "Category", "Status"]}
+              rows={allProducts.map((p) => [
+                p.name,
+                p.price.toFixed(2),
+                String(p.stock),
+                p.category?.name || "",
+                p.suspended ? "Suspended" : p.stock > 0 ? "Active" : "Depleted",
+              ])}
+            />
+            <Link href="/dashboard/inventory/new" className={styles.addBtn}>
+              <Plus size={14} />
+              New Product
+            </Link>
+          </div>
         </div>
       </header>
 

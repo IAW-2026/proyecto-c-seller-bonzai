@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, Layers, CircleAlert, ShoppingBag, DollarSign, Clock, ArrowUpRight } from "lucide-react";
+import { Package, Layers, CircleAlert, ShoppingBag, DollarSign, Clock, Calendar, ArrowUpRight } from "lucide-react";
 import styles from "./page.module.css";
 
 export default async function DashboardPage() {
@@ -30,6 +30,11 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  const productIds = products.map((p) => p.id);
+  const reservations = productIds.length > 0
+    ? await prisma.reservation.findMany({ where: { productId: { in: productIds } } })
+    : [];
+
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
   const outOfStock = products.filter((p) => p.stock === 0).length;
@@ -39,6 +44,7 @@ export default async function DashboardPage() {
     .filter((o) => o.status === "PAID")
     .reduce((sum, o) => sum + o.total, 0);
   const pendingOrders = orders.filter((o) => o.status === "PENDING").length;
+  const activeReservations = reservations.filter((r) => r.status === "ACTIVE").length;
 
   return (
     <div className={styles.page}>
@@ -101,6 +107,26 @@ export default async function DashboardPage() {
           <div className={styles.statInfo}>
             <span className={`${styles.statValue} ${pendingOrders > 0 ? styles.statValueWarning : ""}`}>{pendingOrders}</span>
             <span className={styles.statLabel}>Pending Orders</span>
+          </div>
+        </Link>
+      </div>
+
+      <div className={styles.sectionLabel}>Reservations</div>
+      <div className={styles.stats}>
+        <Link href="/dashboard/reservations" className={styles.statCard}>
+          <div className={styles.statIcon}><Calendar size={18} /></div>
+          <div className={styles.statInfo}>
+            <span className={styles.statValue}>{reservations.length}</span>
+            <span className={styles.statLabel}>Total Reservations</span>
+          </div>
+        </Link>
+        <Link href="/dashboard/reservations" className={`${styles.statCard} ${activeReservations > 0 ? styles.statCardWarning : ""}`}>
+          <div className={`${styles.statIcon} ${activeReservations > 0 ? styles.statIconPending : ""}`}>
+            <Clock size={18} />
+          </div>
+          <div className={styles.statInfo}>
+            <span className={`${styles.statValue} ${activeReservations > 0 ? styles.statValueWarning : ""}`}>{activeReservations}</span>
+            <span className={styles.statLabel}>Active</span>
           </div>
         </Link>
       </div>
