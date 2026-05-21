@@ -296,14 +296,22 @@
 }
 
 .productInfo:hover :global(.deleteBtn),
-.productInfo:active :global(.deleteBtn) {
+.productInfo:active :global(.deleteBtn),
+.productInfo:hover :global(.toggleBtn),
+.productInfo:active :global(.toggleBtn) {
   opacity: 1;
 }
 
 .tableRow[data-revealed="true"] .imagePreviewOverlay,
 .tableRow[data-revealed="true"] .editIcon,
-.tableRow[data-revealed="true"] :global(.deleteBtn) {
+.tableRow[data-revealed="true"] :global(.deleteBtn),
+.tableRow[data-revealed="true"] :global(.toggleBtn) {
   opacity: 1;
+}
+
+:global(.toggleBtn) {
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .productName {
@@ -366,6 +374,12 @@
   color: var(--color-error);
   border-color: rgba(220, 38, 38, 0.2);
   background: rgba(220, 38, 38, 0.05);
+}
+
+.badgeSuspended {
+  color: #b8860b;
+  border-color: rgba(184, 134, 11, 0.2);
+  background: rgba(184, 134, 11, 0.05);
 }
 
 .searchBar {

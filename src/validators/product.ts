@@ -19,6 +19,8 @@ export const updateProductSchema = z.object({
   categoryId: z.string().optional(),
   imageUrl: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
   isFragile: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  suspended: z.boolean().optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;

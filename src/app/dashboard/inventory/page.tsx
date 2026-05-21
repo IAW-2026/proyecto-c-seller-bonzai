@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Package, Layers, CircleAlert, Plus, Pencil, Eye } from "lucide-react";
 import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
 import { DeleteProductButton } from "../../../frontend/components/products/DeleteProductButton";
+import { ToggleProductButton } from "../../../frontend/components/products/ToggleProductButton";
 import { ProductPreviewModal } from "../../../frontend/components/products/ProductPreviewModal";
 import { ProductRowClient } from "../../../frontend/components/products/ProductRowClient";
 import styles from "./page.module.css";
@@ -133,6 +134,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
                             <span className={styles.productName}>{product.name}</span>
                             <Pencil size={10} className={styles.editIcon} />
                           </Link>
+                          <ToggleProductButton productId={product.id} suspended={product.suspended} />
                           <DeleteProductButton productId={product.id} productName={product.name} />
                         </div>
                       </div>
@@ -147,9 +149,15 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
                     </span>
                   </div>
                   <div className={`${styles.tableCell} ${styles.cellStatus}`}>
-                    <span className={`${styles.badge} ${product.stock > 0 ? styles.badgeActive : styles.badgeInactive}`}>
-                      {product.stock > 0 ? "Active" : "Depleted"}
-                    </span>
+                    {product.suspended ? (
+                      <span className={`${styles.badge} ${styles.badgeSuspended}`}>
+                        Suspended
+                      </span>
+                    ) : (
+                      <span className={`${styles.badge} ${product.stock > 0 ? styles.badgeActive : styles.badgeInactive}`}>
+                        {product.stock > 0 ? "Active" : "Depleted"}
+                      </span>
+                    )}
                   </div>
                 </ProductRowClient>
               ))}

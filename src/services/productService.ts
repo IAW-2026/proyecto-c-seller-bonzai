@@ -24,7 +24,7 @@ export async function getProductsBySeller(sellerId: string) {
   return productRepo.findProductBySellerId(sellerId, true);
 }
 
-export async function updateProduct(id: string, data: { name?: string; description?: string; price?: number; stock?: number; categoryId?: string; imageUrl?: string; isFragile?: boolean }) {
+export async function updateProduct(id: string, data: { name?: string; description?: string; price?: number; stock?: number; categoryId?: string; imageUrl?: string; isFragile?: boolean; isActive?: boolean; suspended?: boolean }) {
   const product = await productRepo.findProductById(id);
   if (!product) {
     return { success: false, error: "PRODUCT_NOT_FOUND", message: "El producto no existe.", status: 404 };
@@ -37,6 +37,8 @@ export async function updateProduct(id: string, data: { name?: string; descripti
   if (data.stock !== undefined) updateData.stock = data.stock;
   if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
   if (data.isFragile !== undefined) updateData.isFragile = data.isFragile;
+  if (data.isActive !== undefined) updateData.isActive = data.isActive;
+  if (data.suspended !== undefined) updateData.suspended = data.suspended;
   if (data.categoryId !== undefined) updateData.category = { connect: { id: data.categoryId } };
 
   const updated = await productRepo.updateProduct(id, updateData);

@@ -22,9 +22,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { orderId, buyerId, items, status } = parsed.data;
+    const { orderId, buyerId, reservationIds, status } = parsed.data;
 
-    const result = await orderService.createOrder(orderId, buyerId, items, status);
+    const result = await orderService.createOrder(orderId, buyerId, reservationIds, status);
 
     if (!result.success) {
       return NextResponse.json(

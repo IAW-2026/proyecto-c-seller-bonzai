@@ -4,7 +4,7 @@ import * as reservationRepo from "../repositories/reservationRepository";
 import type { Prisma } from "@prisma/client";
 import { OrderStatus } from "@prisma/client";
 
-export async function createOrder(orderId: string | undefined, buyerId: string, items: { productId: string; name: string; quantity: number; price: number }[], status?: string) {
+export async function createOrder(orderId: string | undefined, buyerId: string, reservationIds: string[], status?: string) {
   const finalOrderId = orderId?.trim() || crypto.randomUUID();
 
   if (orderId) {
@@ -16,12 +16,23 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
 
   let sellerId: string | null = null;
   const orderItems: Prisma.OrderItemCreateManyOrderInput[] = [];
-  const reservationIds: string[] = [];
+  const resolvedReservationIds: string[] = [];
 
-  for (const item of items) {
-    const product = await productRepo.findProductById(item.productId);
+  for (const reservationId of reservationIds) {
+    const reservation = await reservationRepo.findReservationById(reservationId);
+    if (!reservation) {
+      return { success: false, error: "RESERVATION_NOT_FOUND", message: `La reserva ${reservationId} no existe.`, status: 404 };
+    }
+    if (reservation.buyerId !== buyerId) {
+      return { success: false, error: "RESERVATION_NOT_YOURS", message: `La reserva ${reservationId} no pertenece al comprador.`, status: 403 };
+    }
+    if (reservation.status !== "ACTIVE") {
+      return { success: false, error: "RESERVATION_NOT_ACTIVE", message: `La reserva ${reservationId} no está activa.`, status: 409 };
+    }
+
+    const product = await productRepo.findProductById(reservation.productId);
     if (!product) {
-      return { success: false, error: "PRODUCT_NOT_FOUND", message: `El producto ${item.productId} no existe.`, status: 404 };
+      return { success: false, error: "PRODUCT_NOT_FOUND", message: `El producto asociado a la reserva ${reservationId} no existe.`, status: 404 };
     }
 
     if (!sellerId) {
@@ -36,31 +47,29 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
     }
 
     if (!product.isActive) {
-      return { success: false, error: "PRODUCT_INACTIVE", message: `El producto ${item.productId} no está disponible.`, status: 409 };
+      return { success: false, error: "PRODUCT_INACTIVE", message: `El producto ${product.name} no está disponible.`, status: 409 };
     }
 
-    const subtotal = item.price * item.quantity;
+    const quantity = reservation.quantity;
+    const unitPrice = product.price;
+    const subtotal = unitPrice * quantity;
 
     orderItems.push({
-      productId: item.productId,
-      productName: item.name,
-      quantity: item.quantity,
-      unitPrice: item.price,
+      productId: product.id,
+      productName: product.name,
+      quantity,
+      unitPrice,
       subtotal,
     });
 
-    const reservation = await reservationRepo.findActiveReservationByProductAndBuyer(item.productId, buyerId);
-    if (!reservation) {
-      return { success: false, error: "NO_ACTIVE_RESERVATION", message: `El producto ${item.name} no tiene una reserva activa. Debe reservarse antes de crear la orden.`, status: 409 };
-    }
-    reservationIds.push(reservation.id);
+    resolvedReservationIds.push(reservation.id);
   }
 
   if (!sellerId) {
     return { success: false, error: "SELLER_NOT_FOUND", message: "No existe un vendedor asociado a la orden indicada.", status: 404 };
   }
 
-  const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = orderItems.reduce((acc, item) => acc + item.subtotal, 0);
   const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PENDING;
 
   await orderRepo.createOrderWithReservationConsumption({
@@ -72,7 +81,7 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
     items: {
       create: orderItems,
     },
-  }, reservationIds);
+  }, resolvedReservationIds);
 
   return { success: true, orderId: finalOrderId, status: 201 };
 }

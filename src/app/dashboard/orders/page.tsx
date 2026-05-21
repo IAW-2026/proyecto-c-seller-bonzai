@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShoppingBag, DollarSign, Clock, CheckCircle, XCircle, Truck, Package } from "lucide-react";
 import { ShipButton } from "../../../frontend/components/orders/ShipButton";
+import { CancelOrderButton } from "../../../frontend/components/orders/CancelOrderButton";
 import { OrderDetailsModal } from "../../../frontend/components/orders/OrderDetailsModal";
 import { SearchInput } from "../../../frontend/components/ui/SearchInput/SearchInput";
 import styles from "./page.module.css";
@@ -170,13 +171,20 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                     </span>
                   </div>
                   <div className={styles.tableCell}>
-                    {order.status === "PAID" ? (
-                      <ShipButton orderId={order.id} />
-                    ) : order.status === "AWAITING_TRACKING" ? (
-                      <span style={{ fontSize: "0.75rem", color: "#b8860b" }}>Awaiting tracking</span>
-                    ) : order.status === "SHIPPED" && order.trackingId ? (
-                      <span className={styles.trackingId}>Track: {order.trackingId}</span>
-                    ) : null}
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                      {order.status === "PAID" ? (
+                        <>
+                          <ShipButton orderId={order.id} />
+                          <CancelOrderButton orderId={order.id} />
+                        </>
+                      ) : order.status === "PENDING" ? (
+                        <CancelOrderButton orderId={order.id} />
+                      ) : order.status === "AWAITING_TRACKING" ? (
+                        <span style={{ fontSize: "0.75rem", color: "#b8860b" }}>Awaiting tracking</span>
+                      ) : order.status === "SHIPPED" && order.trackingId ? (
+                        <span className={styles.trackingId}>Track: {order.trackingId}</span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ))}

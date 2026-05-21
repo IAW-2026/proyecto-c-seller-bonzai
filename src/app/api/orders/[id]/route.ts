@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "../../../../lib/prisma";
 import * as orderService from "../../../../services/orderService";
 import { getSellerId } from "../../../../lib/auth-helpers";
 import { cancelOrderSchema } from "../../../../validators/order-cancel";
@@ -55,41 +56,65 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const serviceKey = req.headers.get("x-service-key");
-    if (serviceKey !== process.env.SERVICE_API_KEY) {
-      return NextResponse.json(
-        { error: "UNAUTHORIZED", message: "Acceso no autorizado." },
-        { status: 401 }
-      );
-    }
-
     const { id } = await context.params;
+    const serviceKey = req.headers.get("x-service-key");
 
-    let reason: string | undefined;
-    try {
-      const body = await req.json();
-      const parsed = cancelOrderSchema.safeParse(body);
-      if (parsed.success) {
-        reason = parsed.data.reason;
+    if (serviceKey === process.env.SERVICE_API_KEY) {
+      let reason: string | undefined;
+      try {
+        const body = await req.json();
+        const parsed = cancelOrderSchema.safeParse(body);
+        if (parsed.success) {
+          reason = parsed.data.reason;
+        }
+      } catch {
+        // no body or invalid JSON — reason is optional
       }
-    } catch {
-      // no body or invalid JSON — reason is optional
+
+      const result = await orderService.cancelOrder(id, reason);
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error, message: result.message },
+          { status: result.status }
+        );
+      }
+      return NextResponse.json({ success: true });
     }
 
-    const result = await orderService.cancelOrder(id, reason);
+    // Seller cancelling their own order
+    const sellerId = await getSellerId();
+    const order = await prisma.order.findUnique({ where: { id }, select: { sellerId: true, status: true } });
+    if (!order) {
+      return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "Order not found." }, { status: 404 });
+    }
+    if (order.sellerId !== sellerId) {
+      return NextResponse.json({ error: "FORBIDDEN", message: "Not your order." }, { status: 403 });
+    }
+    if (order.status === "SHIPPED" || order.status === "CANCELLED") {
+      return NextResponse.json({ error: "INVALID_STATUS", message: "Cannot cancel a shipped or already cancelled order." }, { status: 409 });
+    }
 
+    const result = await orderService.cancelOrder(id);
     if (!result.success) {
       return NextResponse.json(
         { error: result.error, message: result.message },
         { status: result.status }
       );
     }
-
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json(
-      { error: "SERVER_ERROR" },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
+    }
+    if (error.message === "SELLER_NOT_FOUND") {
+      return NextResponse.json({ error: "SELLER_NOT_FOUND", message: "No existe un perfil de vendedor para esta cuenta." }, { status: 404 });
+    }
+    if (error.message === "SELLER_SUSPENDED") {
+      return NextResponse.json({ error: "SELLER_SUSPENDED", message: "Tu cuenta de vendedor está suspendida." }, { status: 403 });
+    }
+    if (error.message === "SELLER_NOT_APPROVED") {
+      return NextResponse.json({ error: "SELLER_NOT_APPROVED", message: "Tu cuenta de vendedor aún no ha sido aprobada." }, { status: 403 });
+    }
+    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
   }
 }
