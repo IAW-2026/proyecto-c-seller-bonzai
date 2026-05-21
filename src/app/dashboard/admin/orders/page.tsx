@@ -22,6 +22,11 @@ interface Order {
   total: number;
   transactionId: string | null;
   trackingId: string | null;
+  paidAt: string | null;
+  awaitingTrackingAt: string | null;
+  shippedAt: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
   createdAt: string;
   items: OrderItem[];
 }
@@ -162,6 +167,11 @@ export default function AdminOrdersPage() {
                     status={order.status}
                     total={order.total}
                     createdAt={order.createdAt}
+                    paidAt={order.paidAt}
+                    awaitingTrackingAt={order.awaitingTrackingAt}
+                    shippedAt={order.shippedAt}
+                    cancelledAt={order.cancelledAt}
+                    cancellationReason={order.cancellationReason}
                     trackingId={order.trackingId}
                     sellerEmail={order.sellerEmail}
                     items={order.items.map((i) => ({

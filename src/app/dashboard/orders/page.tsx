@@ -131,19 +131,24 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
               {orders.map((order) => (
                 <div key={order.id} className={styles.tableRow}>
                   <div className={styles.tableCell}>
-                    <OrderDetailsModal
-                      orderId={order.id}
-                      status={order.status}
-                      total={order.total}
-                      createdAt={order.createdAt.toISOString()}
-                      trackingId={order.trackingId}
-                      items={order.items.map((i) => ({
-                        productName: i.productName,
-                        quantity: i.quantity,
-                        unitPrice: i.unitPrice,
-                        subtotal: i.subtotal,
-                      }))}
-                    >
+                        <OrderDetailsModal
+                          orderId={order.id}
+                          status={order.status}
+                          total={order.total}
+                          createdAt={order.createdAt.toISOString()}
+                          paidAt={order.paidAt?.toISOString() ?? null}
+                          awaitingTrackingAt={order.awaitingTrackingAt?.toISOString() ?? null}
+                          shippedAt={order.shippedAt?.toISOString() ?? null}
+                          cancelledAt={order.cancelledAt?.toISOString() ?? null}
+                          trackingId={order.trackingId}
+                          cancellationReason={order.cancellationReason}
+                          items={order.items.map((i) => ({
+                            productName: i.productName,
+                            quantity: i.quantity,
+                            unitPrice: i.unitPrice,
+                            subtotal: i.subtotal,
+                          }))}
+                        >
                       <span className={styles.orderId}>#{order.id.slice(0, 8)}</span>
                     </OrderDetailsModal>
                   </div>

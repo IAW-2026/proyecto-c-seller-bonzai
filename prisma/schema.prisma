@@ -77,6 +77,8 @@ model Order {
   cancellationReason  String?
   paidAt              DateTime?
   shippedAt           DateTime?
+  awaitingTrackingAt  DateTime?
+  cancelledAt         DateTime?
   createdAt           DateTime    @default(now())
 
   items OrderItem[]

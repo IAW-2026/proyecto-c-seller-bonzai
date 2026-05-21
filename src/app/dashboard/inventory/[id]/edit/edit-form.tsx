@@ -98,6 +98,7 @@ export function EditProductForm({ product, categoryId }: { product: Product; cat
     setError("");
 
     const form = new FormData(e.currentTarget);
+    const formCategoryId = form.get("categoryId") as string;
     const body: Record<string, unknown> = {
       name: form.get("name"),
       description: form.get("description") || undefined,
@@ -106,6 +107,11 @@ export function EditProductForm({ product, categoryId }: { product: Product; cat
       imageUrl: imageUrl || undefined,
       isFragile: form.get("isFragile") === "on",
     };
+    if (formCategoryId) {
+      body.categoryId = formCategoryId;
+    } else {
+      body.categoryId = null;
+    }
 
     const res = await fetch(`/api/products/${product.id}`, {
       method: "PATCH",

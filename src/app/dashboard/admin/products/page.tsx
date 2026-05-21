@@ -122,7 +122,7 @@ export default function AdminProductsPage() {
         <div className={styles.statCard}>
           <div className={styles.statIcon}><Package size={16} /></div>
           <div className={styles.statInfo}>
-            <span className={styles.statValue}>{products.length}</span>
+            <span className={styles.statValue}>{total}</span>
             <span className={styles.statLabel}>Total Products</span>
           </div>
         </div>

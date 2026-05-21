@@ -15,8 +15,13 @@ interface OrderDetailsModalProps {
   status: string;
   total: number;
   createdAt: string;
+  paidAt?: string | null;
+  awaitingTrackingAt?: string | null;
+  shippedAt?: string | null;
+  cancelledAt?: string | null;
   trackingId: string | null;
   sellerEmail?: string | null;
+  cancellationReason?: string | null;
   items: OrderItem[];
   children: ReactNode;
 }
@@ -37,8 +42,54 @@ const statusIcons: Record<string, React.ReactNode> = {
   CANCELLED: <XCircle size={14} />,
 };
 
-export function OrderDetailsModal({ orderId, status, total, createdAt, trackingId, sellerEmail, items, children }: OrderDetailsModalProps) {
+const statusOrder = ["PENDING", "PAID", "AWAITING_TRACKING", "SHIPPED", "CANCELLED"] as const;
+
+function getTimelineEvents(props: OrderDetailsModalProps) {
+  const events: { status: string; timestamp: string | null; label: string }[] = [];
+  if (props.createdAt) events.push({ status: "PENDING", timestamp: props.createdAt, label: "Order placed" });
+  if (props.paidAt) events.push({ status: "PAID", timestamp: props.paidAt, label: "Payment confirmed" });
+  if (props.awaitingTrackingAt) events.push({ status: "AWAITING_TRACKING", timestamp: props.awaitingTrackingAt, label: "Ready for tracking" });
+  if (props.shippedAt) events.push({ status: "SHIPPED", timestamp: props.shippedAt, label: "Shipped" });
+  if (props.cancelledAt) events.push({ status: "CANCELLED", timestamp: props.cancelledAt, label: props.cancellationReason ? `Cancelled: ${props.cancellationReason}` : "Cancelled" });
+  return events.sort((a, b) => {
+    if (!a.timestamp) return 1;
+    if (!b.timestamp) return -1;
+    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+  });
+}
+
+function OrderTimeline({ events, currentStatus }: { events: { status: string; timestamp: string | null; label: string }[]; currentStatus: string }) {
+  const currentIndex = statusOrder.indexOf(currentStatus as typeof statusOrder[number]);
+  return (
+    <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.15em", color: "#aaa", fontWeight: 600, marginBottom: "0.75rem" }}>Timeline</div>
+      <div style={{ position: "relative", paddingLeft: "1.25rem" }}>
+        <div style={{ position: "absolute", left: "0.35rem", top: "0.3rem", bottom: "0.3rem", width: "1.5px", background: "var(--color-border)" }} />
+        {events.map((event, i) => {
+          const idx = statusOrder.indexOf(event.status as typeof statusOrder[number]);
+          const completed = idx <= currentIndex && currentStatus !== "CANCELLED" ? event.status !== "CANCELLED" : idx <= currentIndex;
+          const isCancelled = event.status === "CANCELLED";
+          return (
+            <div key={i} style={{ position: "relative", paddingBottom: i < events.length - 1 ? "0.75rem" : 0 }}>
+              <div style={{ position: "absolute", left: "-1.05rem", top: "0.15rem", width: "0.6rem", height: "0.6rem", borderRadius: "50%", background: completed ? (isCancelled ? "#dc2626" : "var(--color-primary)") : "var(--color-border)", border: "2px solid white", boxShadow: "0 0 0 1px var(--color-border)" }} />
+              <div style={{ fontSize: "0.78rem", fontWeight: completed ? 500 : 400, color: completed ? "var(--color-text)" : "var(--color-text-muted)" }}>{event.label}</div>
+              {event.timestamp && (
+                <div style={{ fontSize: "0.65rem", color: "var(--color-text-muted)", marginTop: "0.1rem" }}>
+                  {new Date(event.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function OrderDetailsModal(props: OrderDetailsModalProps) {
+  const { orderId, status, total, createdAt, trackingId, sellerEmail, items, children } = props;
   const [open, setOpen] = useState(false);
+  const timelineEvents = getTimelineEvents(props);
 
   return (
     <>
@@ -100,6 +151,8 @@ export function OrderDetailsModal({ orderId, status, total, createdAt, trackingI
               {statusIcons[status]}
               {statusLabels[status] || status}
             </div>
+
+            <OrderTimeline events={timelineEvents} currentStatus={status} />
 
             {sellerEmail && (
               <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>

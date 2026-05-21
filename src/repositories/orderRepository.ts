@@ -67,7 +67,7 @@ export async function cancelOrderWithStockRestore(id: string, reason?: string): 
 
     return tx.order.update({
       where: { id },
-      data: { status: OrderStatus.CANCELLED, cancellationReason: reason },
+      data: { status: OrderStatus.CANCELLED, cancellationReason: reason, cancelledAt: new Date() },
     });
   });
 }
@@ -86,7 +86,7 @@ export async function confirmPayment(
 export async function shipToAwaitingTracking(id: string): Promise<Order> {
   return prisma.order.update({
     where: { id },
-    data: { status: OrderStatus.AWAITING_TRACKING },
+    data: { status: OrderStatus.AWAITING_TRACKING, awaitingTrackingAt: new Date() },
   });
 }
 
