@@ -1,13 +1,5 @@
-import { SignIn } from "@clerk/nextjs";
-import { clerkTheme } from "../../../../frontend/lib/clerkTheme";
+import { EmailCheckSignIn } from "../../../../frontend/components/auth/EmailCheckSignIn";
 
 export default function SignInPage() {
-  return (
-    <SignIn
-      routing="hash"
-      signUpUrl="/sign-up"
-      fallbackRedirectUrl="/dashboard"
-      appearance={clerkTheme}
-    />
-  );
+  return <EmailCheckSignIn />;
 }
