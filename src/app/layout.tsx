@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Seller App",
+  title: "Bonzai — Seller Dashboard",
   description: "Seller application for Bonzai marketplace",
 };
 
