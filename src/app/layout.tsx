@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { LeafyChat } from "../frontend/components/chat/LeafyChat";
 import "../frontend/styles/globals.css";
 
 const geistSans = Geist({
@@ -26,7 +27,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <body>{children}</body>
+        <body>
+          {children}
+          <LeafyChat />
+        </body>
       </html>
     </ClerkProvider>
   );
