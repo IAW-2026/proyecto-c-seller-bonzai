@@ -31,7 +31,7 @@ async function tryModel(apiKey: string, message: string, model: string): Promise
     ],
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 500,
+      maxOutputTokens: 1024,
     },
   };
 
