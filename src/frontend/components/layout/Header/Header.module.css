@@ -138,6 +138,19 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+  .actions {
+    gap: 0.25rem;
+  }
+  .actions a,
+  .actions button {
+    font-size: 0.55rem !important;
+    padding: 0.4rem 0.5rem !important;
+    letter-spacing: 0.05em !important;
+  }
 }
 
 @media (min-width: 640px) {

@@ -41,7 +41,7 @@ export default async function HomePage() {
       <Header 
         actions={
           <>
-            <Link href="/sign-in"><Button variant="ghost">Seller Login</Button></Link>
+          <Link href="/sign-in"><Button variant="ghost">Seller Login</Button></Link>
             <Link href="/sign-up"><Button variant="primary">Start Selling</Button></Link>
           </>
         }
