@@ -99,6 +99,13 @@ export default async function HomePage() {
           </div>
         </section>
 
+        <section className={styles.reviewsLink}>
+          <Link href="/reviews" className={styles.reviewsLinkInner}>
+            <span className={styles.reviewsLinkLabel}>Seller Testimonials</span>
+            <span className={styles.reviewsLinkDesc}>Read reviews from the Bonzai community <ArrowRight size={12} /></span>
+          </Link>
+        </section>
+
         {/* BOTTOM CTA SECTION */}
         <section className={styles.discoverMore}>
           <div className={styles.line}></div>
