@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageSquare, Trash2, Leaf } from "lucide-react";
+import { Skeleton } from "../../../../frontend/components/ui/Skeleton/Skeleton";
 import styles from "./page.module.css";
 
 interface Review {
@@ -65,7 +66,22 @@ export default function AdminReviewsPage() {
       </div>
 
       {loading ? (
-        <p className={styles.loadingText}>Loading...</p>
+        <div className={styles.skeletonList}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={styles.reviewCard}>
+              <div className={styles.reviewHeader}>
+                <div style={{ flex: 1 }}>
+                  <Skeleton height="0.85rem" width="40%" />
+                  <div style={{ marginTop: "0.25rem" }}><Skeleton height="0.6rem" width="30%" /></div>
+                </div>
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <Skeleton height="0.8rem" width="60%" />
+              </div>
+              <Skeleton height="0.8rem" />
+            </div>
+          ))}
+        </div>
       ) : reviews.length === 0 ? (
         <p className={styles.emptyText}>No reviews yet.</p>
       ) : (
@@ -92,8 +108,9 @@ export default function AdminReviewsPage() {
                   <Leaf
                     key={n}
                     size={14}
-                    fill={n <= review.rating ? "var(--color-primary)" : "none"}
-                    color={n <= review.rating ? "var(--color-primary)" : "var(--color-border)"}
+                    fill={n <= review.rating ? "var(--color-primary-light)" : "none"}
+                    color={n <= review.rating ? "var(--color-primary)" : "var(--color-text-muted)"}
+                    strokeWidth={n <= review.rating ? 2 : 1.5}
                   />
                 ))}
               </div>

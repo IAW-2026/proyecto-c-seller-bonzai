@@ -359,12 +359,12 @@
 }
 
 .reviewsLink {
-  text-align: center;
+  display: flex;
   margin-bottom: 2rem;
 }
 
 .reviewsLinkInner {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
@@ -372,6 +372,7 @@
   padding: 1.25rem 2rem;
   border: 1px solid var(--color-border);
   transition: border-color 0.2s;
+  flex: 1;
 }
 
 .reviewsLinkInner:hover {

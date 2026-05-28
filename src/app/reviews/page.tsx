@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { Star, Leaf, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Header } from "../../frontend/components/layout/Header/Header";
 import { Button } from "../../frontend/components";
+import { Skeleton } from "../../frontend/components/ui/Skeleton/Skeleton";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -17,7 +18,7 @@ interface Review {
 }
 
 export default function ReviewsPage() {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
@@ -120,7 +121,7 @@ export default function ReviewsPage() {
           <p className={styles.subtitle}>What sellers think about Bonzai</p>
         </header>
 
-        {isSeller && myReview ? (
+        {!isLoaded ? null : isSeller && myReview ? (
           <section className={styles.formSection}>
             <h2 className={styles.formTitle}>You already left a review</h2>
             <div className={styles.reviewStars}>
@@ -128,8 +129,9 @@ export default function ReviewsPage() {
                 <Leaf
                   key={n}
                   size={16}
-                  fill={n <= myReview.rating ? "var(--color-primary)" : "none"}
-                  color={n <= myReview.rating ? "var(--color-primary)" : "var(--color-border)"}
+                  fill={n <= myReview.rating ? "var(--color-primary-light)" : "none"}
+                  color={n <= myReview.rating ? "var(--color-primary)" : "var(--color-text-muted)"}
+                  strokeWidth={n <= myReview.rating ? 2 : 1.5}
                 />
               ))}
             </div>
@@ -151,9 +153,10 @@ export default function ReviewsPage() {
                   onMouseLeave={() => setHoverRating(0)}
                 >
                   <Leaf
-                    size={28}
-                    fill={n <= (hoverRating || rating) ? "var(--color-primary)" : "none"}
-                    color={n <= (hoverRating || rating) ? "var(--color-primary)" : "var(--color-border)"}
+                    size={22}
+                    fill={n <= (hoverRating || rating) ? "var(--color-primary-light)" : "none"}
+                    color={n <= (hoverRating || rating) ? "var(--color-primary)" : "var(--color-text-muted)"}
+                    strokeWidth={n <= (hoverRating || rating) ? 2 : 1.5}
                   />
                 </button>
               ))}
@@ -180,14 +183,14 @@ export default function ReviewsPage() {
           </section>
         )}
 
-        {!isSignedIn && (
+        {!isSignedIn && isLoaded && (
           <section className={styles.loginPrompt}>
             <p>Want to leave a review?</p>
             <Link href="/sign-up"><Button variant="primary">Become a Seller</Button></Link>
           </section>
         )}
 
-        {isSignedIn && !isSeller && (
+        {isLoaded && isSignedIn && !isSeller && (
           <section className={styles.loginPrompt}>
             <p>Only sellers can leave reviews.</p>
           </section>
@@ -195,7 +198,23 @@ export default function ReviewsPage() {
 
         <section className={styles.reviewsSection}>
           {loading ? (
-            <p className={styles.loadingText}>Loading reviews...</p>
+            <div className={styles.skeletonList}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={styles.skeletonCard}>
+                  <div className={styles.skeletonHeader}>
+                    <Skeleton width="2rem" height="2rem" style={{ borderRadius: "50%" }} />
+                    <div style={{ flex: 1 }}>
+                      <Skeleton height="0.85rem" width="40%" />
+                      <div style={{ marginTop: "0.25rem" }}><Skeleton height="0.6rem" width="30%" /></div>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: "0.5rem" }}>
+                    <Skeleton height="0.8rem" width="60%" />
+                  </div>
+                  <Skeleton height="0.8rem" />
+                </div>
+              ))}
+            </div>
           ) : reviews.length === 0 ? (
             <p className={styles.emptyText}>No reviews yet. Be the first!</p>
           ) : (
@@ -228,8 +247,9 @@ export default function ReviewsPage() {
                     <Leaf
                       key={n}
                       size={16}
-                      fill={n <= review.rating ? "var(--color-primary)" : "none"}
-                      color={n <= review.rating ? "var(--color-primary)" : "var(--color-border)"}
+                      fill={n <= review.rating ? "var(--color-primary-light)" : "none"}
+                      color={n <= review.rating ? "var(--color-primary)" : "var(--color-text-muted)"}
+                      strokeWidth={n <= review.rating ? 2 : 1.5}
                     />
                   ))}
                 </div>

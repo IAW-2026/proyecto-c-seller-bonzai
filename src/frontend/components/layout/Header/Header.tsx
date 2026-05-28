@@ -19,7 +19,7 @@ interface HeaderProps {
 
 export function Header({ navItems, actions }: HeaderProps) {
   const pathname = usePathname();
-  const { isSignedIn, signOut } = useAuth();
+  const { isLoaded, isSignedIn, signOut } = useAuth();
 
   return (
     <header className={styles.header}>
@@ -43,7 +43,7 @@ export function Header({ navItems, actions }: HeaderProps) {
       )}
 
       <div className={styles.actions}>
-        {isSignedIn ? (
+        {!isLoaded ? null : isSignedIn ? (
           <>
             <Link href="/dashboard">
               <Button variant="ghost">Dashboard</Button>
