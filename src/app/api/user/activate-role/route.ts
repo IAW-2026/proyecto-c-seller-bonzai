@@ -58,7 +58,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, roles: [...currentRoles, role] });
-  } catch {
+  } catch (err) {
+    console.error("[activate-role]", err);
     return NextResponse.json(
       { error: "SERVER_ERROR", message: "Error activating role." },
       { status: 500 }

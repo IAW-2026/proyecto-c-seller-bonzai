@@ -56,9 +56,9 @@ export default function ReviewsPage() {
   useEffect(() => {
     if (isSeller) {
       fetch("/api/reviews/mine")
-        .then((r) => r.json())
-        .then((data) => setMyReview(data.review))
-        .catch(() => {});
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => setMyReview(data?.review ?? null))
+        .catch(() => setMyReview(null));
     }
   }, [isSeller]);
 

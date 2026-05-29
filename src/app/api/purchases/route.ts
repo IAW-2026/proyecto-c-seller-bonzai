@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as orderService from "../../../../services/orderService";
+import * as orderService from "../../../services/orderService";
 
 export async function GET(req: Request) {
   try {
@@ -21,11 +21,11 @@ export async function GET(req: Request) {
       );
     }
 
-    const result = await orderService.getOrdersByBuyer(buyerId);
+    const result = await orderService.getPurchaseHistory(buyerId);
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[orders/my]", err);
+    console.error("[purchases]", err);
     return NextResponse.json(
       { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }

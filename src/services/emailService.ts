@@ -1,12 +1,12 @@
-import { prisma } from "../lib/prisma";
+import * as sellerRepo from "../repositories/sellerRepository";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_KEY);
 
 export async function sendNewOrderEmail(sellerId: string, orderId: string, buyerId: string, items: { productName: string; quantity: number; unitPrice: number; subtotal: number }[], total: number) {
   try {
-    const seller = await prisma.sellerProfile.findUnique({ where: { id: sellerId } });
+    const seller = await sellerRepo.findSellerById(sellerId);
     if (!seller?.email) return;
-
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_KEY);
 
     const itemsHtml = items
       .map((i) => `<tr><td style="padding:6px 8px;border-bottom:1px solid #e8ece9">${i.productName}</td><td style="padding:6px 8px;border-bottom:1px solid #e8ece9;text-align:center">${i.quantity}</td><td style="padding:6px 8px;border-bottom:1px solid #e8ece9;text-align:right">$${i.unitPrice.toFixed(2)}</td><td style="padding:6px 8px;border-bottom:1px solid #e8ece9;text-align:right">$${i.subtotal.toFixed(2)}</td></tr>`)

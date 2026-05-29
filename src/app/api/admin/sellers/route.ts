@@ -32,6 +32,7 @@ export async function GET() {
 
     return NextResponse.json({ sellers: filtered });
   } catch (error: any) {
+    console.error("[admin/sellers]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }

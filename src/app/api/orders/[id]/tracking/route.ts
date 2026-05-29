@@ -34,9 +34,10 @@ export async function POST(
     }
 
     return NextResponse.json({ success: true, orderId: result.orderId, newStatus: result.newStatus });
-  } catch {
+  } catch (err) {
+    console.error("[orders/tracking]", err);
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

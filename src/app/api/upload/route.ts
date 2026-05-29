@@ -33,7 +33,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: result.secure_url });
-  } catch {
+  } catch (err) {
+    console.error("[upload]", err);
     return NextResponse.json(
       { error: "Upload failed. Check Cloudinary configuration." },
       { status: 500 },

@@ -32,6 +32,7 @@ export async function PATCH(
       { status: 400 }
     );
   } catch (error: any) {
+    console.error("[orders PATCH]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }
@@ -45,7 +46,7 @@ export async function PATCH(
       return NextResponse.json({ error: "SELLER_NOT_APPROVED", message: "Tu cuenta de vendedor aún no ha sido aprobada." }, { status: 403 });
     }
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }
@@ -90,8 +91,8 @@ export async function DELETE(
     if (order.sellerId !== sellerId) {
       return NextResponse.json({ error: "FORBIDDEN", message: "Not your order." }, { status: 403 });
     }
-    if (order.status === "SHIPPED" || order.status === "CANCELLED") {
-      return NextResponse.json({ error: "INVALID_STATUS", message: "Cannot cancel a shipped or already cancelled order." }, { status: 409 });
+    if (order.status !== "PENDING" && order.status !== "PAID") {
+      return NextResponse.json({ error: "INVALID_STATUS", message: "Solo se pueden cancelar órdenes en estado PENDING o PAID." }, { status: 409 });
     }
 
     const result = await orderService.cancelOrder(id);
@@ -103,6 +104,7 @@ export async function DELETE(
     }
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error("[orders DELETE]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }
@@ -115,6 +117,6 @@ export async function DELETE(
     if (error.message === "SELLER_NOT_APPROVED") {
       return NextResponse.json({ error: "SELLER_NOT_APPROVED", message: "Tu cuenta de vendedor aún no ha sido aprobada." }, { status: 403 });
     }
-    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }

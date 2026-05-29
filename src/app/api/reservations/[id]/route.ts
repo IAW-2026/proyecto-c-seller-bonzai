@@ -12,7 +12,8 @@ export async function DELETE(
     if (!isService) {
       try {
         await getSellerId();
-      } catch {
+      } catch (err) {
+        console.error("[reservations DELETE auth]", err);
         return NextResponse.json(
           { error: "UNAUTHORIZED", message: "Acceso no autorizado." },
           { status: 401 }
@@ -32,9 +33,10 @@ export async function DELETE(
     }
 
     return new Response(null, { status: 204 });
-  } catch {
+  } catch (err) {
+    console.error("[reservations DELETE]", err);
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

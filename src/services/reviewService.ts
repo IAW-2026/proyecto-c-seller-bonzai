@@ -2,7 +2,12 @@ import { prisma } from "../lib/prisma";
 import type { CreateReviewInput } from "../validators/review";
 
 export async function createReview(sellerId: string, input: CreateReviewInput) {
-  return prisma.sellerReview.create({
+  const existing = await prisma.sellerReview.findUnique({ where: { sellerId } });
+  if (existing) {
+    return { success: false, error: "REVIEW_ALREADY_EXISTS", message: "Ya enviaste una reseña.", status: 409 };
+  }
+
+  const review = await prisma.sellerReview.create({
     data: {
       sellerId,
       rating: input.rating,
@@ -10,6 +15,8 @@ export async function createReview(sellerId: string, input: CreateReviewInput) {
     },
     include: { seller: { select: { email: true } } },
   });
+
+  return { success: true, review };
 }
 
 export async function getAllReviews(page = 1, limit = 10) {
@@ -27,5 +34,11 @@ export async function getAllReviews(page = 1, limit = 10) {
 }
 
 export async function deleteReview(id: string) {
-  return prisma.sellerReview.delete({ where: { id } });
+  const existing = await prisma.sellerReview.findUnique({ where: { id } });
+  if (!existing) {
+    return { success: false, error: "REVIEW_NOT_FOUND", message: "La reseña no existe.", status: 404 };
+  }
+
+  await prisma.sellerReview.delete({ where: { id } });
+  return { success: true };
 }

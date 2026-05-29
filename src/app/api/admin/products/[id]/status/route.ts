@@ -48,6 +48,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error("[admin/products/status]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }

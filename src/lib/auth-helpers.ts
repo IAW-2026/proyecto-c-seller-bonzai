@@ -7,8 +7,13 @@ export async function requireAdmin(): Promise<void> {
     throw new Error("UNAUTHORIZED");
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
+  let user;
+  try {
+    const client = await clerkClient();
+    user = await client.users.getUser(userId);
+  } catch {
+    throw new Error("UNAUTHORIZED");
+  }
   const raw = user.publicMetadata as Record<string, unknown> | undefined;
   const roles: string[] = Array.isArray(raw?.roles) ? raw.roles : [];
 

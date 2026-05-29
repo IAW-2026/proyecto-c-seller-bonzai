@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ orders: ordersWithEmail, totalRevenue, total });
   } catch (error: any) {
+    console.error("[admin/orders]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }

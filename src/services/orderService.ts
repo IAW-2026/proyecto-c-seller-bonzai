@@ -1,60 +1,68 @@
+import { prisma } from "../lib/prisma";
 import * as orderRepo from "../repositories/orderRepository";
+import * as purchaseRepo from "../repositories/purchaseRepository";
 import * as productRepo from "../repositories/productRepository";
 import * as reservationRepo from "../repositories/reservationRepository";
 import type { Prisma } from "@prisma/client";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, ReservationStatus, PurchaseStatus } from "@prisma/client";
 import { sendNewOrderEmail } from "./emailService";
 
-export async function createOrder(orderId: string | undefined, buyerId: string, reservationIds: string[], status?: string) {
-  const finalOrderId = orderId?.trim() || crypto.randomUUID();
+interface ShippingInfo {
+  shippingName: string;
+  shippingLastName: string;
+  shippingAddress: string;
+  shippingCity: string;
+  shippingProvince: string;
+  shippingZip: string;
+  shippingPhone?: string;
+}
 
-  if (orderId) {
-    const existing = await orderRepo.findOrderById(finalOrderId);
-    if (existing) {
-      return { success: false, error: "ORDER_ALREADY_EXISTS", message: "La orden ya fue registrada previamente en el contexto del seller.", status: 409 };
+export async function createOrder(
+  orderId: string | undefined,
+  buyerId: string,
+  reservationIds: string[],
+  status: string | undefined,
+  shipping: ShippingInfo,
+) {
+  // Batch-fetch all reservations and products
+  const reservations = await reservationRepo.findReservationsByIds(reservationIds);
+  if (reservations.length !== reservationIds.length) {
+    const missing = reservationIds.filter((id) => !reservations.find((r) => r.id === id));
+    return { success: false, error: "RESERVATION_NOT_FOUND", message: `Las reservas ${missing.join(", ")} no existen.`, status: 404 };
+  }
+
+  for (const reservation of reservations) {
+    if (reservation.buyerId !== buyerId) {
+      return { success: false, error: "RESERVATION_NOT_YOURS", message: `La reserva ${reservation.id} no pertenece al comprador.`, status: 403 };
+    }
+    if (reservation.status !== ReservationStatus.ACTIVE) {
+      return { success: false, error: "RESERVATION_NOT_ACTIVE", message: `La reserva ${reservation.id} no está activa.`, status: 409 };
     }
   }
 
-  let sellerId: string | null = null;
-  const orderItems: Prisma.OrderItemCreateManyOrderInput[] = [];
-  const resolvedReservationIds: string[] = [];
+  const productIds = [...new Set(reservations.map((r) => r.productId))];
+  const products = await productRepo.findProductsByIds(productIds);
+  if (products.length !== productIds.length) {
+    return { success: false, error: "PRODUCT_NOT_FOUND", message: "Uno o más productos no existen.", status: 404 };
+  }
 
-  for (const reservationId of reservationIds) {
-    const reservation = await reservationRepo.findReservationById(reservationId);
-    if (!reservation) {
-      return { success: false, error: "RESERVATION_NOT_FOUND", message: `La reserva ${reservationId} no existe.`, status: 404 };
-    }
-    if (reservation.buyerId !== buyerId) {
-      return { success: false, error: "RESERVATION_NOT_YOURS", message: `La reserva ${reservationId} no pertenece al comprador.`, status: 403 };
-    }
-    if (reservation.status !== "ACTIVE") {
-      return { success: false, error: "RESERVATION_NOT_ACTIVE", message: `La reserva ${reservationId} no está activa.`, status: 409 };
-    }
+  const productMap = new Map(products.map((p) => [p.id, p]));
 
-    const product = await productRepo.findProductById(reservation.productId);
+  // Group reservations by sellerId
+  const sellerGroups = new Map<string, { reservationIds: string[]; items: Prisma.OrderItemCreateManyOrderInput[] }>();
+
+  for (const reservation of reservations) {
+    const product = productMap.get(reservation.productId);
     if (!product) {
-      return { success: false, error: "PRODUCT_NOT_FOUND", message: `El producto asociado a la reserva ${reservationId} no existe.`, status: 404 };
-    }
-
-    if (!sellerId) {
-      sellerId = product.sellerId;
-    } else if (product.sellerId !== sellerId) {
-      return {
-        success: false,
-        error: "MIXED_SELLER_ITEMS",
-        message: "Todos los items de la orden deben pertenecer al mismo vendedor.",
-        status: 400,
-      };
+      return { success: false, error: "PRODUCT_NOT_FOUND", message: `Producto asociado a reserva ${reservation.id} no encontrado.`, status: 404 };
     }
 
     if (!product.isActive) {
       return { success: false, error: "PRODUCT_INACTIVE", message: `El producto ${product.name} no está disponible.`, status: 409 };
     }
-
     if (product.suspended) {
       return { success: false, error: "PRODUCT_SUSPENDED", message: `El producto ${product.name} está suspendido.`, status: 409 };
     }
-
     if (product.seller.suspended) {
       return { success: false, error: "SELLER_SUSPENDED", message: `El vendedor del producto ${product.name} está suspendido.`, status: 409 };
     }
@@ -63,54 +71,102 @@ export async function createOrder(orderId: string | undefined, buyerId: string, 
     const unitPrice = product.price;
     const subtotal = unitPrice * quantity;
 
-    orderItems.push({
+    const sellerId = product.sellerId;
+    if (!sellerGroups.has(sellerId)) {
+      sellerGroups.set(sellerId, { reservationIds: [], items: [] });
+    }
+    const group = sellerGroups.get(sellerId)!;
+    group.reservationIds.push(reservation.id);
+    group.items.push({
       productId: product.id,
       productName: product.name,
       quantity,
       unitPrice,
       subtotal,
     });
-
-    resolvedReservationIds.push(reservation.id);
   }
 
-  if (!sellerId) {
+  if (sellerGroups.size === 0) {
     return { success: false, error: "SELLER_NOT_FOUND", message: "No existe un vendedor asociado a la orden indicada.", status: 404 };
   }
 
-  const total = orderItems.reduce((acc, item) => acc + item.subtotal, 0);
   const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PENDING;
 
-  await orderRepo.createOrderWithReservationConsumption({
-    id: finalOrderId,
-    buyerId,
-    sellerId,
-    status: normalizedStatus,
-    total,
-    items: {
-      create: orderItems,
-    },
-  }, resolvedReservationIds);
+  // Create Orders inside a transaction (no Purchase yet — created at payment confirmation)
+  const result = await prisma.$transaction(async (tx) => {
+    const ordersData = Array.from(sellerGroups.entries()).map(([sellerId, group]) => {
+      const total = group.items.reduce((acc, item) => acc + item.subtotal, 0);
+      return {
+        data: {
+          id: crypto.randomUUID(),
+          buyerId,
+          sellerId,
+          status: normalizedStatus,
+          total,
+          shippingName: shipping.shippingName,
+          shippingLastName: shipping.shippingLastName,
+          shippingAddress: shipping.shippingAddress,
+          shippingCity: shipping.shippingCity,
+          shippingProvince: shipping.shippingProvince,
+          shippingZip: shipping.shippingZip,
+          shippingPhone: shipping.shippingPhone || null,
+          items: {
+            create: group.items,
+          },
+        } satisfies Prisma.OrderCreateInput,
+        reservationIds: group.reservationIds,
+      };
+    });
 
-  sendNewOrderEmail(sellerId, finalOrderId, buyerId, orderItems.map((i) => ({
-    productName: i.productName,
-    quantity: i.quantity,
-    unitPrice: i.unitPrice,
-    subtotal: i.subtotal,
-  })), total);
+    const createdOrders: Array<Prisma.OrderGetPayload<{}>> = [];
+    for (const { data, reservationIds: ids } of ordersData) {
+      const order = await tx.order.create({ data });
+      createdOrders.push(order);
+      if (ids.length > 0) {
+        await tx.reservation.updateMany({
+          where: { id: { in: ids }, status: ReservationStatus.ACTIVE },
+          data: { status: ReservationStatus.COMPLETED },
+        });
+      }
+    }
 
-  return { success: true, orderId: finalOrderId, status: 201 };
+    return { orders: createdOrders };
+  });
+
+  // Fire-and-forget email per order
+  for (const order of result.orders) {
+    const group = sellerGroups.get(order.sellerId);
+    if (group) {
+      sendNewOrderEmail(order.sellerId, order.id, buyerId, group.items.map((i) => ({
+        productName: i.productName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        subtotal: i.subtotal,
+      })), order.total);
+    }
+  }
+
+  return {
+    success: true,
+    orderIds: result.orders.map((o) => o.id),
+  };
 }
+
+
 
 export async function cancelOrder(orderId: string, reason?: string) {
   const order = await orderRepo.findOrderById(orderId);
 
   if (!order) {
-    return { success: false, error: "ORDER_NOT_FOUND", message: "La orden indicada no existe en el contexto del seller.", status: 404 };
+    return { success: false, error: "ORDER_NOT_FOUND", message: "La orden indicada no existe.", status: 404 };
   }
 
   if (order.status === OrderStatus.CANCELLED) {
     return { success: false, error: "ORDER_ALREADY_CANCELLED", message: "La orden ya fue cancelada previamente.", status: 409 };
+  }
+
+  if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.PAID) {
+    return { success: false, error: "INVALID_STATUS", message: "Solo se pueden cancelar órdenes en estado PENDING o PAID.", status: 409 };
   }
 
   await orderRepo.cancelOrderWithStockRestore(orderId, reason);
@@ -118,29 +174,67 @@ export async function cancelOrder(orderId: string, reason?: string) {
   return { success: true };
 }
 
-export async function confirmPayment(orderId: string, transactionId: string, paidAt?: string) {
-  const order = await orderRepo.findOrderById(orderId);
-
-  if (!order) {
-    return { success: false, error: "ORDER_NOT_FOUND", message: "No existe una orden con ese orderId.", status: 404 };
+export async function confirmPayment(
+  buyerId: string,
+  orderIds: string[],
+  transactionId: string,
+  paidAt?: string,
+) {
+  if (orderIds.length === 0) {
+    return { success: false, error: "INVALID_REQUEST", message: "Debe incluir al menos un orderId.", status: 400 };
   }
 
-  if (order.status === OrderStatus.CANCELLED) {
-    return { success: false, error: "ORDER_CANCELLED", message: "La orden fue cancelada y no puede recibir pago.", status: 409 };
-  }
+  // Batch-fetch all orders
+  const orders = await orderRepo.findOrdersByIds(orderIds);
+  const foundIds = new Set(orders.map((o) => o.id));
 
-  if (order.status === OrderStatus.PAID) {
-    return { success: false, error: "PAYMENT_ALREADY_CONFIRMED", message: "El pago ya fue confirmado previamente.", status: 409 };
+  for (const id of orderIds) {
+    const order = orders.find((o) => o.id === id);
+    if (!order) {
+      return { success: false, error: "ORDER_NOT_FOUND", message: `La orden ${id} no existe.`, status: 404 };
+    }
+    if (order.buyerId !== buyerId) {
+      return { success: false, error: "ORDER_NOT_YOURS", message: `La orden ${id} no pertenece al comprador.`, status: 403 };
+    }
+    if (order.status === OrderStatus.CANCELLED) {
+      return { success: false, error: "ORDER_CANCELLED", message: `La orden ${id} fue cancelada y no puede recibir pago.`, status: 409 };
+    }
+    if (order.status === OrderStatus.PAID) {
+      return { success: false, error: "PAYMENT_ALREADY_CONFIRMED", message: `La orden ${id} ya fue pagada.`, status: 409 };
+    }
+    if (order.status !== OrderStatus.PENDING) {
+      return { success: false, error: "INVALID_STATUS", message: `La orden ${id} no está en estado PENDING.`, status: 409 };
+    }
   }
 
   const paidAtDate = paidAt ? new Date(paidAt) : new Date();
 
-  await orderRepo.confirmPayment(orderId, transactionId, paidAtDate);
+  // Create Purchase and link orders inside a transaction
+  const result = await prisma.$transaction(async (tx) => {
+    const purchase = await tx.purchase.create({
+      data: {
+        buyerId,
+        status: PurchaseStatus.COMPLETED,
+      },
+    });
+
+    const updateResult = await tx.order.updateMany({
+      where: { id: { in: orderIds }, status: OrderStatus.PENDING },
+      data: {
+        status: OrderStatus.PAID,
+        purchaseId: purchase.id,
+        transactionId,
+        paidAt: paidAtDate,
+      },
+    });
+
+    return { purchaseId: purchase.id, updatedCount: updateResult.count };
+  });
 
   return {
     success: true,
-    orderId,
-    newStatus: OrderStatus.PAID,
+    purchaseId: result.purchaseId,
+    updatedCount: result.updatedCount,
   };
 }
 
@@ -200,6 +294,32 @@ export async function getOrdersByBuyer(buyerId: string) {
         price: item.unitPrice,
       })),
       trackingId: order.trackingId,
+    })),
+  };
+}
+
+export async function getPurchaseHistory(buyerId: string) {
+  const purchases = await purchaseRepo.findPurchasesByBuyerId(buyerId);
+
+  return {
+    purchases: purchases.map((p) => ({
+      purchaseId: p.id,
+      status: p.status,
+      createdAt: p.createdAt.toISOString(),
+      orders: p.orders.map((o) => ({
+        orderId: o.id,
+        sellerId: o.sellerId,
+        status: o.status,
+        total: o.total,
+        createdAt: o.createdAt.toISOString(),
+        trackingId: o.trackingId,
+        items: o.items.map((item) => ({
+          productId: item.productId,
+          name: item.productName,
+          quantity: item.quantity,
+          price: item.unitPrice,
+        })),
+      })),
     })),
   };
 }

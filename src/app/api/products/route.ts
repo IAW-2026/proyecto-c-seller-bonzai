@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(product, { status: 201 });
   } catch (error: any) {
+    console.error("[products POST]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json(
         { error: "UNAUTHORIZED", message: "Token ausente o inválido." },
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }
@@ -64,6 +65,7 @@ export async function GET() {
 
     return NextResponse.json(products);
   } catch (error: any) {
+    console.error("[products GET]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json(
         { error: "UNAUTHORIZED", message: "Token ausente o inválido." },
@@ -77,7 +79,7 @@ export async function GET() {
       );
     }
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

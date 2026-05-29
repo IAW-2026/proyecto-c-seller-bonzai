@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { productId, quantity, orderId, buyerId } = parsed.data;
+    const { productId, quantity, orderId, buyerId, sellerId } = parsed.data;
 
     if (!buyerId) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await reservationService.createReservation(productId, quantity, orderId, buyerId);
+    const result = await reservationService.createReservation(productId, quantity, orderId, buyerId, sellerId);
 
     if (!result.success) {
       return NextResponse.json(
@@ -44,9 +44,10 @@ export async function POST(req: Request) {
       { success: true, reservationId: result.reservationId, expiresAt: result.expiresAt },
       { status: 201 }
     );
-  } catch {
+  } catch (err) {
+    console.error("[reservations]", err);
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

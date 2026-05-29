@@ -100,12 +100,13 @@ export async function GET() {
       revenueTrend,
     });
   } catch (error: any) {
+    console.error("[statistics]", error);
     if (error.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Acceso no autorizado." }, { status: 401 });
     }
     if (error.message === "SELLER_NOT_FOUND") {
-      return NextResponse.json({ error: "SELLER_NOT_FOUND" }, { status: 404 });
+      return NextResponse.json({ error: "SELLER_NOT_FOUND", message: "Perfil de vendedor no encontrado." }, { status: 404 });
     }
-    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }

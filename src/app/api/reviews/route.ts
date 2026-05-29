@@ -10,8 +10,9 @@ export async function GET(req: Request) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)));
     const result = await getAllReviews(page, limit);
     return NextResponse.json(result);
-  } catch {
-    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
+  } catch (err) {
+    console.error("[reviews GET]", err);
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }
 
@@ -19,8 +20,9 @@ export async function POST(req: Request) {
   let sellerId: string;
   try {
     sellerId = await getSellerId();
-  } catch {
-    return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  } catch (err) {
+    console.error("[reviews POST auth]", err);
+    return NextResponse.json({ error: "UNAUTHORIZED", message: "Acceso no autorizado." }, { status: 401 });
   }
 
   try {
@@ -30,9 +32,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "VALIDATION_ERROR", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const review = await createReview(sellerId, parsed.data);
-    return NextResponse.json(review, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "SERVER_ERROR" }, { status: 500 });
+    const result = await createReview(sellerId, parsed.data);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error, message: result.message }, { status: result.status });
+    }
+    return NextResponse.json(result.review, { status: 201 });
+  } catch (err) {
+    console.error("[reviews POST body]", err);
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }

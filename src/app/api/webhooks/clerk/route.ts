@@ -38,7 +38,8 @@ export async function POST(req: Request) {
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
     }) as WebhookEvent;
-  } catch {
+  } catch (err) {
+    console.error("[webhooks/clerk verify]", err);
     return NextResponse.json(
       { error: "Invalid webhook signature." },
       { status: 400 }
@@ -49,18 +50,17 @@ export async function POST(req: Request) {
 
   try {
     switch (type) {
-      case "user.created":
       case "user.updated": {
         const clerkId = data.id as string;
         const email =
           ((data.email_addresses as Array<{ email_address: string }>)?.[0]
             ?.email_address) || "";
 
-        await prisma.sellerProfile.upsert({
-          where: { clerkId },
-          update: { email },
-          create: { clerkId, email, approved: true, suspended: false },
-        });
+        // Only update email if the user already has a SellerProfile
+        const existing = await prisma.sellerProfile.findUnique({ where: { clerkId } });
+        if (existing) {
+          await prisma.sellerProfile.update({ where: { clerkId }, data: { email } });
+        }
 
         return NextResponse.json({ success: true });
       }
@@ -87,9 +87,10 @@ export async function POST(req: Request) {
       default:
         return NextResponse.json({ success: true });
     }
-  } catch {
+  } catch (err) {
+    console.error("[webhooks/clerk]", err);
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

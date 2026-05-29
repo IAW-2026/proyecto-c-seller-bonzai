@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ products, total });
   } catch (error: any) {
+    console.error("[admin/products]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }

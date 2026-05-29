@@ -6,17 +6,18 @@ export async function GET() {
   let sellerId: string;
   try {
     sellerId = await getSellerId();
-  } catch {
+  } catch (err) {
+    console.error("[reviews mine auth]", err);
     return NextResponse.json({ review: null });
   }
 
   try {
-    const review = await prisma.sellerReview.findFirst({
+    const review = await prisma.sellerReview.findUnique({
       where: { sellerId },
-      orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ review });
-  } catch {
+  } catch (err) {
+    console.error("[reviews mine query]", err);
     return NextResponse.json({ review: null });
   }
 }

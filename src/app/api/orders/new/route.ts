@@ -22,9 +22,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const { orderId, buyerId, reservationIds, status } = parsed.data;
+    const { orderId, buyerId, reservationIds, status, shippingName, shippingLastName, shippingAddress, shippingCity, shippingProvince, shippingZip, shippingPhone } = parsed.data;
 
-    const result = await orderService.createOrder(orderId, buyerId, reservationIds, status);
+    const result = await orderService.createOrder(orderId, buyerId, reservationIds, status, {
+      shippingName,
+      shippingLastName,
+      shippingAddress,
+      shippingCity,
+      shippingProvince,
+      shippingZip,
+      shippingPhone,
+    });
 
     if (!result.success) {
       return NextResponse.json(
@@ -34,12 +42,13 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, orderId: result.orderId },
+      { success: true, orderIds: result.orderIds },
       { status: 201 }
     );
-  } catch {
+  } catch (err) {
+    console.error("[orders/new]", err);
     return NextResponse.json(
-      { error: "SERVER_ERROR" },
+      { error: "SERVER_ERROR", message: "Error interno del servidor." },
       { status: 500 }
     );
   }

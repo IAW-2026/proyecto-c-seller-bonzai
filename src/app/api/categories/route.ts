@@ -7,7 +7,8 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
     return NextResponse.json({ categories });
-  } catch {
+  } catch (err) {
+    console.error("[categories]", err);
     return NextResponse.json(
       { error: "SERVER_ERROR", message: "Error fetching categories." },
       { status: 500 }

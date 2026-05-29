@@ -2,7 +2,7 @@ import * as productRepo from "../repositories/productRepository";
 import * as reservationRepo from "../repositories/reservationRepository";
 import { ReservationStatus } from "@prisma/client";
 
-export async function createReservation(productId: string, quantity: number, orderId: string, buyerId: string) {
+export async function createReservation(productId: string, quantity: number, orderId: string, buyerId: string, sellerId?: string) {
   const product = await productRepo.findProductById(productId);
 
   if (!product) {
@@ -37,6 +37,7 @@ export async function createReservation(productId: string, quantity: number, ord
     quantity,
     orderId,
     expiresAt,
+    sellerId,
   );
 
   return {

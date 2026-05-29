@@ -39,7 +39,7 @@ export async function updateProduct(id: string, data: { name?: string; descripti
   if (data.isFragile !== undefined) updateData.isFragile = data.isFragile;
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
   if (data.suspended !== undefined) updateData.suspended = data.suspended;
-  if (data.categoryId === null) {
+  if (data.categoryId === null || data.categoryId === "") {
     updateData.category = { disconnect: true };
   } else if (data.categoryId !== undefined) {
     updateData.category = { connect: { id: data.categoryId } };
