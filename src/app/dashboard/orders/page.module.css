@@ -314,7 +314,16 @@
 
 .trackingId {
   font-size: 0.75rem;
-  color: #073604;
+  color: var(--color-primary);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition: background-size 0.2s ease;
+}
+.trackingId:hover {
+  background-size: 100% 1px;
 }
 
 @media (max-width: 1023px) {

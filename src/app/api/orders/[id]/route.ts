@@ -4,6 +4,45 @@ import * as orderService from "../../../../services/orderService";
 import { getSellerId } from "../../../../lib/auth-helpers";
 import { cancelOrderSchema } from "../../../../validators/order-cancel";
 
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const serviceKey = req.headers.get("x-service-key");
+    const isService = serviceKey === process.env.SERVICE_API_KEY;
+
+    let sellerId: string | undefined;
+    if (!isService) {
+      try {
+        sellerId = await getSellerId();
+      } catch {
+        return NextResponse.json({ error: "UNAUTHORIZED", message: "Acceso no autorizado." }, { status: 401 });
+      }
+    }
+
+    const { id } = await context.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "La orden no existe." }, { status: 404 });
+    }
+
+    if (!isService && order.sellerId !== sellerId) {
+      return NextResponse.json({ error: "FORBIDDEN", message: "No tenés permisos sobre esta orden." }, { status: 403 });
+    }
+
+    return NextResponse.json({ order });
+  } catch (error: any) {
+    console.error("[orders GET]", error);
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }

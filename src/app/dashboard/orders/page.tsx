@@ -212,7 +212,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                       ) : order.status === "AWAITING_TRACKING" ? (
                         <span style={{ fontSize: "0.75rem", color: "#8B7355" }}>Awaiting tracking</span>
                       ) : order.status === "SHIPPED" && order.trackingId ? (
-                        <span className={styles.trackingId}>Track: {order.trackingId}</span>
+                        <a href={`https://proyecto-c-shipping-bonzai.vercel.app/shipping/${order.trackingId}`} target="_blank" rel="noopener noreferrer" className={styles.trackingId}>Track: {order.trackingId}</a>
                       ) : null}
                     </div>
                   </div>

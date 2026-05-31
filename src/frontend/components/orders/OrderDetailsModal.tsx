@@ -164,7 +164,7 @@ export function OrderDetailsModal(props: OrderDetailsModalProps) {
             {trackingId && (
               <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                 <span style={{ fontWeight: 500 }}>Tracking:</span>
-                <strong>{trackingId}</strong>
+                <a href={`https://proyecto-c-shipping-bonzai.vercel.app/shipping/${trackingId}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)", textDecoration: "none", backgroundImage: "linear-gradient(var(--color-primary), var(--color-primary))", backgroundPosition: "0 100%", backgroundSize: "0% 1px", backgroundRepeat: "no-repeat", transition: "background-size 0.2s ease" }} onMouseEnter={(e) => e.currentTarget.style.backgroundSize = "100% 1px"} onMouseLeave={(e) => e.currentTarget.style.backgroundSize = "0% 1px"}>{trackingId}</a>
               </div>
             )}
 
