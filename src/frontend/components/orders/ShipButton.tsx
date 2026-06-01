@@ -26,38 +26,29 @@ export function ShipButton({ orderId, transactionId, buyerId, sellerClerkId, del
     try {
       const token = await getToken();
 
-      const shippingRes = await fetch("https://proyecto-c-shipping-bonzai.vercel.app/api/shipping/dispatch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          orderRef: orderId,
+          action: "ship",
+          clerkToken: token,
           transactionId,
-          sellerId: sellerClerkId,
           buyerId,
+          sellerClerkId,
           deliveryAddress,
           type: isFragile ? "FRAGIL" : "OTROS",
         }),
       });
 
-      if (!shippingRes.ok) {
-        setError("Error al notificar a la shipping app.");
-        return;
-      }
-
-      const res = await fetch(`/api/orders/${orderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ship" }),
-      });
+      const data = await res.json();
 
       if (res.ok) {
         router.refresh();
+      } else {
+        setError(data.message || "Could not ship order.");
       }
     } catch {
-      setError("Error inesperado.");
+      setError("Something went wrong.");
     } finally {
       setLoading(false);
     }
