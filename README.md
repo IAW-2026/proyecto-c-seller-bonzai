@@ -8,9 +8,9 @@
 
 | Email | Rol |
 |---|---|
-| `seller+clerktest@iaw.com` | Vendedor estándar |
-| `seller_admin+clerktest@iaw.com` | Administrador |
-| `seller_2+clerktest@iaw.com` | Segundo vendedor |
+| `seller+clerk_test@iaw.com` | Vendedor estándar |
+| `seller_admin+clerk_test@iaw.com` | Administrador |
+| `seller_2+clerk_test@iaw.com` | Segundo vendedor |
 
 Contraseña de todos los usuarios: `iawuser#`
 
