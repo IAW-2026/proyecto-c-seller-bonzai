@@ -66,7 +66,27 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
-      include: { items: true },
+      select: {
+        id: true,
+        status: true,
+        total: true,
+        buyerId: true,
+        transactionId: true,
+        trackingId: true,
+        cancellationReason: true,
+        shippingName: true,
+        shippingLastName: true,
+        shippingAddress: true,
+        shippingCity: true,
+        shippingProvince: true,
+        shippingZip: true,
+        paidAt: true,
+        shippedAt: true,
+        awaitingTrackingAt: true,
+        cancelledAt: true,
+        createdAt: true,
+        items: true,
+      },
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
@@ -204,7 +224,14 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                     <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                       {order.status === "PAID" ? (
                         <>
-                          <ShipButton orderId={order.id} />
+                          <ShipButton
+  orderId={order.id}
+  transactionId={order.transactionId || ""}
+  buyerId={order.buyerId}
+  sellerClerkId={userId}
+  deliveryAddress={`${order.shippingName || ""} ${order.shippingLastName || ""}, ${order.shippingAddress || ""}, ${order.shippingCity || ""}, ${order.shippingProvince || ""} ${order.shippingZip || ""}`.trim()}
+  isFragile={order.items.some((i) => i.productName.toLowerCase().includes("fragil"))}
+/>
                           <CancelOrderButton orderId={order.id} iconOnly />
                         </>
                       ) : order.status === "PENDING" ? (
