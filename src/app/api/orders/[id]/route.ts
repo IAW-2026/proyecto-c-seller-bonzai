@@ -54,37 +54,6 @@ export async function PATCH(
     const body = await req.json();
 
     if (body.action === "ship") {
-      const { clerkToken, transactionId, buyerId, sellerClerkId, deliveryAddress, type } = body;
-
-      if (clerkToken && transactionId && buyerId && deliveryAddress) {
-        const shippingBody = {
-          orderRef: id,
-          transactionId,
-          sellerId: sellerClerkId,
-          buyerId,
-          deliveryAddress,
-          type: type || "OTROS",
-        };
-        console.error("[orders PATCH shipping]", JSON.stringify(shippingBody, null, 2));
-        const shippingRes = await fetch("https://proyecto-c-shipping-bonzai.vercel.app/api/shipping/dispatch", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${clerkToken}`,
-          },
-          body: JSON.stringify(shippingBody),
-        });
-
-        if (!shippingRes.ok) {
-          const shippingError = await shippingRes.text();
-          console.error("[orders PATCH shipping response]", shippingRes.status, shippingError);
-          return NextResponse.json(
-            { error: "SHIPPING_ERROR", message: "Could not communicate with the shipping app." },
-            { status: 502 }
-          );
-        }
-      }
-
       const result = await orderService.shipOrder(id);
 
       if (!result.success) {
@@ -92,6 +61,26 @@ export async function PATCH(
           { error: result.error, message: result.message },
           { status: result.status }
         );
+      }
+
+      // Fire-and-forget: notify the shipping app without blocking
+      const { clerkToken, transactionId, buyerId, sellerClerkId, deliveryAddress, type } = body;
+      if (clerkToken && transactionId && buyerId && deliveryAddress) {
+        fetch("https://proyecto-c-shipping-bonzai.vercel.app/api/shipping/dispatch", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${clerkToken}`,
+          },
+          body: JSON.stringify({
+            orderRef: id,
+            transactionId,
+            sellerId: sellerClerkId,
+            buyerId,
+            deliveryAddress,
+            type: type || "OTROS",
+          }),
+        }).catch((err) => console.error("[orders PATCH shipping fire-and-forget]", err));
       }
 
       return NextResponse.json({ success: true, orderId: result.orderId, newStatus: result.newStatus });
