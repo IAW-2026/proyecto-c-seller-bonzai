@@ -66,6 +66,7 @@ export async function PATCH(
       // Fire-and-forget: notify the shipping app without blocking
       const { clerkToken, transactionId, buyerId, sellerClerkId, deliveryAddress, type } = body;
       if (clerkToken && transactionId && buyerId && deliveryAddress) {
+        console.error("[orders PATCH] calling shipping app");
         fetch("https://proyecto-c-shipping-bonzai.vercel.app/api/shipping/dispatch", {
           method: "POST",
           headers: {
@@ -80,7 +81,12 @@ export async function PATCH(
             deliveryAddress,
             type: type || "OTROS",
           }),
+        }).then(async (r) => {
+          const text = await r.text();
+          console.error("[orders PATCH shipping response]", r.status, text);
         }).catch((err) => console.error("[orders PATCH shipping fire-and-forget]", err));
+      } else {
+        console.error("[orders PATCH] skipping shipping — missing fields", { hasToken: !!clerkToken, hasTx: !!transactionId, hasBuyer: !!buyerId, hasAddr: !!deliveryAddress });
       }
 
       return NextResponse.json({ success: true, orderId: result.orderId, newStatus: result.newStatus });
