@@ -1,7 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/", "/api/health", "/api/auth/check-email", "/api/user/activate-role", "/sign-in", "/sign-up", "/webhooks", "/activate-seller"];
+const publicRoutes = ["/", "/api/health", "/api/auth/check-email", "/api/user/activate-role", "/api/products/browse", "/api/sellers", "/sign-in", "/sign-up", "/webhooks", "/activate-seller"];
 
 async function getUserRoles(userId: string): Promise<string[]> {
   const { clerkClient } = await import("@clerk/nextjs/server");

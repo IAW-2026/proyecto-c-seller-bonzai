@@ -7,8 +7,10 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("categoryId") || "";
 
-    const where = {
+    const where: Record<string, unknown> = {
       isActive: true,
       suspended: false,
       moderationStatus: "ACTIVE" as const,
@@ -17,6 +19,14 @@ export async function GET(req: NextRequest) {
         suspended: false,
       },
     };
+
+    if (search) {
+      where.name = { contains: search, mode: "insensitive" };
+    }
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
 
     const [products, total] = await Promise.all([
       prisma.product.findMany({
