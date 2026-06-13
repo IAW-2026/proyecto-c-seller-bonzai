@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../../lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { prisma } from "../../../../../../lib/prisma";
+import { requireAdminOrServiceKey } from "../../../../../../lib/auth-helpers";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params;
+    await requireAdminOrServiceKey(req);
 
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
-    }
+    const { id } = await context.params;
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -32,10 +29,6 @@ export async function GET(
 
     if (!order) {
       return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "Order not found." }, { status: 404 });
-    }
-
-    if (order.buyerId !== userId) {
-      return NextResponse.json({ error: "FORBIDDEN", message: "No tienes acceso a esta orden." }, { status: 403 });
     }
 
     const events: { status: string; timestamp: string; detail?: string }[] = [];
@@ -59,11 +52,14 @@ export async function GET(
     }
 
     return NextResponse.json({ orderId: order.id, currentStatus: order.status, events });
-  } catch (err) {
-    console.error("[orders/timeline]", err);
-    return NextResponse.json(
-      { error: "SERVER_ERROR", message: "Error interno del servidor." },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    console.error("[admin/orders/timeline]", err);
+    if (err.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
+    }
+    if (err.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "FORBIDDEN", message: "Requiere rol de administrador." }, { status: 403 });
+    }
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }

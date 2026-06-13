@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
-import { requireAdmin } from "../../../../lib/auth-helpers";
+import { requireAdminOrServiceKey } from "../../../../lib/auth-helpers";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    await requireAdmin();
+    await requireAdminOrServiceKey(req);
 
     const [products, orders, categories, sellers] = await Promise.all([
       prisma.product.findMany(),
@@ -99,6 +99,35 @@ export async function GET() {
       orders: monthlyOrderMap.get(m) || 0,
     }));
 
+    const uniqueBuyers = new Set(orders.map((o) => o.buyerId)).size;
+
+    const productRevenue = new Map<string, { name: string; revenue: number; quantity: number }>();
+    for (const order of orders) {
+      if (order.status === "PAID" || order.status === "AWAITING_TRACKING" || order.status === "SHIPPED") {
+        for (const item of order.items) {
+          const current = productRevenue.get(item.productId) || { name: item.productName, revenue: 0, quantity: 0 };
+          current.revenue += item.subtotal;
+          current.quantity += item.quantity;
+          productRevenue.set(item.productId, current);
+        }
+      }
+    }
+    const topProducts = Array.from(productRevenue.entries())
+      .sort(([, a], [, b]) => b.revenue - a.revenue)
+      .slice(0, 10)
+      .map(([productId, data]) => ({ productId, ...data }));
+
+    const reservations = await prisma.reservation.findMany();
+    const totalReservations = reservations.length;
+    const completedReservations = reservations.filter((r) => r.status === "COMPLETED").length;
+    const reservationConversionRate = totalReservations > 0 ? Math.round((completedReservations / totalReservations) * 10000) / 100 : 0;
+
+    const ratingResult = await prisma.sellerReview.aggregate({
+      _avg: { rating: true },
+      _count: true,
+    });
+    const averageRating = Math.round((ratingResult._avg.rating || 0) * 100) / 100;
+
     return NextResponse.json({
       summary: {
         totalSellers,
@@ -111,12 +140,18 @@ export async function GET() {
         totalStock,
         outOfStock,
         moderatedProducts,
+        uniqueBuyers,
+        totalReservations,
+        reservationConversionRate,
+        averageRating,
+        totalReviews: ratingResult._count,
       },
       monthlyRevenue,
       monthlyOrders,
       topCategories,
       revenueTrend,
       topSellers,
+      topProducts,
     });
   } catch (error: any) {
     console.error("[admin/statistics]", error);

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
-import { requireAdmin } from "../../../../lib/auth-helpers";
+import { requireAdminOrServiceKey } from "../../../../lib/auth-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAdmin();
+    await requireAdminOrServiceKey(req);
 
     const { searchParams } = req.nextUrl;
     const search = searchParams.get("search") || "";
@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
     const ordersWithEmail = orders.map((o) => ({
       ...o,
       sellerEmail: sellerEmailMap.get(o.sellerId) || null,
+      purchaseId: o.purchaseId,
     }));
 
     const totalRevenue = orders

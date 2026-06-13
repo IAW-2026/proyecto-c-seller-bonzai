@@ -7,49 +7,44 @@ export async function GET(req: NextRequest) {
     await requireAdminOrServiceKey(req);
 
     const { searchParams } = req.nextUrl;
-    const search = searchParams.get("search") || "";
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
-    const includeInactive = searchParams.get("includeInactive") === "true";
+    const from = searchParams.get("from") || "";
+    const to = searchParams.get("to") || "";
 
     const where: Record<string, unknown> = {};
-    if (!includeInactive) {
-      where.isActive = true;
-    }
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { seller: { email: { contains: search, mode: "insensitive" } } },
-      ];
+    if (from || to) {
+      const dateFilter: Record<string, string | Date> = {};
+      if (from) dateFilter.gte = new Date(from);
+      if (to) dateFilter.lte = new Date(to + "T23:59:59.999Z");
+      where.createdAt = dateFilter;
     }
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
+    const [purchases, total] = await Promise.all([
+      prisma.purchase.findMany({
         where,
         include: {
-          seller: { select: { id: true, email: true } },
-          category: true,
+          orders: {
+            include: { items: true },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
-      prisma.product.count({ where }),
+      prisma.purchase.count({ where }),
     ]);
 
-    return NextResponse.json({ products, total });
+    return NextResponse.json({ purchases, total, page, limit });
   } catch (error: any) {
-    console.error("[admin/products]", error);
+    console.error("[admin/purchases]", error);
     if (error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "UNAUTHORIZED", message: "Token ausente o inválido." }, { status: 401 });
     }
     if (error.message === "FORBIDDEN") {
       return NextResponse.json({ error: "FORBIDDEN", message: "Requiere rol de administrador." }, { status: 403 });
     }
-    return NextResponse.json(
-      { error: "SERVER_ERROR", message: "Error fetching products." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "SERVER_ERROR", message: "Error interno del servidor." }, { status: 500 });
   }
 }

@@ -44,6 +44,16 @@ export async function getSellerId(): Promise<string> {
   return profile.id;
 }
 
+export async function requireAdminOrServiceKey(req?: Request): Promise<void> {
+  if (req) {
+    const serviceKey = req.headers.get("x-service-key");
+    if (serviceKey === process.env.SERVICE_API_KEY) {
+      return;
+    }
+  }
+  await requireAdmin();
+}
+
 export async function verifyProductOwnership(productId: string): Promise<void> {
   const sellerId = await getSellerId();
 
