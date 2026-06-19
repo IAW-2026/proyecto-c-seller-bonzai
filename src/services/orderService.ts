@@ -284,6 +284,7 @@ export async function getOrdersByBuyer(buyerId: string) {
   return {
     orders: orders.map((order) => ({
       orderId: order.id,
+      sellerId: order.sellerId,
       status: order.status,
       total: order.total,
       createdAt: order.createdAt.toISOString(),
