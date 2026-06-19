@@ -1,5 +1,6 @@
 import * as productRepo from "../repositories/productRepository";
 import type { Prisma } from "@prisma/client";
+import { uploadImageToCloudinary } from "../lib/cloudinary";
 
 export async function createProduct(data: { name: string; description?: string; price: number; stock: number; sellerId: string; categoryId?: string; imageUrl?: string; isFragile?: boolean }) {
   const createData: Prisma.ProductCreateInput = {
@@ -9,7 +10,7 @@ export async function createProduct(data: { name: string; description?: string; 
     stock: data.stock,
     seller: { connect: { id: data.sellerId } },
     isActive: true,
-    imageUrl: data.imageUrl,
+    imageUrl: data.imageUrl ? await uploadImageToCloudinary(data.imageUrl) : undefined,
     isFragile: data.isFragile ?? false,
   };
 
@@ -35,7 +36,7 @@ export async function updateProduct(id: string, data: { name?: string; descripti
   if (data.description !== undefined) updateData.description = data.description;
   if (data.price !== undefined) updateData.price = data.price;
   if (data.stock !== undefined) updateData.stock = data.stock;
-  if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+  if (data.imageUrl !== undefined) updateData.imageUrl = await uploadImageToCloudinary(data.imageUrl);
   if (data.isFragile !== undefined) updateData.isFragile = data.isFragile;
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
   if (data.suspended !== undefined) updateData.suspended = data.suspended;
