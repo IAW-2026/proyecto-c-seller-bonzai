@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, orderIds: result.orderIds },
+      { success: true, orders: result.orders, totalAmount: result.totalAmount },
       { status: 201 }
     );
   } catch (err) {

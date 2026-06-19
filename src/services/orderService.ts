@@ -148,7 +148,8 @@ export async function createOrder(
 
   return {
     success: true,
-    orderIds: result.orders.map((o) => o.id),
+    orders: result.orders.map((o) => ({ orderId: o.id, sellerId: o.sellerId })),
+    totalAmount: result.orders.reduce((acc, o) => acc + o.total, 0),
   };
 }
 
