@@ -1,9 +1,10 @@
 import * as productRepo from "../repositories/productRepository";
 import type { Prisma } from "@prisma/client";
 import { uploadImageToCloudinary } from "../lib/cloudinary";
+import { generateProductSlug } from "../lib/slug";
 
 export async function createProduct(data: { name: string; description?: string; price: number; stock: number; sellerId: string; categoryId?: string; imageUrl?: string; isFragile?: boolean }) {
-  const createData: Prisma.ProductCreateInput = {
+  const product = await productRepo.createProduct({
     name: data.name,
     description: data.description || "",
     price: data.price,
@@ -12,13 +13,11 @@ export async function createProduct(data: { name: string; description?: string; 
     isActive: true,
     imageUrl: data.imageUrl ? await uploadImageToCloudinary(data.imageUrl) : undefined,
     isFragile: data.isFragile ?? false,
-  };
+  });
 
-  if (data.categoryId) {
-    createData.category = { connect: { id: data.categoryId } };
-  }
+  await productRepo.updateProduct(product.id, { slug: generateProductSlug(product.name, product.id) });
 
-  return productRepo.createProduct(createData);
+  return productRepo.findProductById(product.id);
 }
 
 export async function getProductsBySeller(sellerId: string) {
@@ -47,7 +46,12 @@ export async function updateProduct(id: string, data: { name?: string; descripti
   }
 
   const updated = await productRepo.updateProduct(id, updateData);
-  return { success: true, product: updated };
+
+  if (data.name !== undefined && updated.name) {
+    await productRepo.updateProduct(id, { slug: generateProductSlug(updated.name, id) });
+  }
+
+  return { success: true, product: await productRepo.findProductById(id) };
 }
 
 export async function deleteProduct(id: string) {

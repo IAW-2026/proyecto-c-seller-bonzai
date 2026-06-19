@@ -44,6 +44,13 @@ export async function decrementStock(productId: string, quantity: number): Promi
   });
 }
 
+export async function findProductBySlug(slug: string) {
+  return prisma.product.findUnique({
+    where: { slug },
+    include: { seller: { select: { id: true, email: true, approved: true, suspended: true } }, category: true },
+  });
+}
+
 export async function incrementStock(productId: string, quantity: number): Promise<Product> {
   return prisma.product.update({
     where: { id: productId },
