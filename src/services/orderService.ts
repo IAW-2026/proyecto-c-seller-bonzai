@@ -148,7 +148,7 @@ export async function createOrder(
 
   return {
     success: true,
-    orders: result.orders.map((o) => ({ orderId: o.id, sellerId: o.sellerId })),
+    orders: result.orders.map((o) => ({ orderId: o.id, sellerId: o.sellerId, subtotal: o.total })),
   };
 }
 
