@@ -21,12 +21,12 @@ export async function GET(
 
     const [products, orders, review] = await Promise.all([
       prisma.product.findMany({
-        where: { sellerId: seller.id },
+        where: { sellerId: seller.clerkId },
         orderBy: { createdAt: "desc" },
         include: { category: true },
       }),
       prisma.order.findMany({
-        where: { sellerId: seller.id },
+        where: { sellerId: seller.clerkId },
         include: { items: true },
         orderBy: { createdAt: "desc" },
       }),
