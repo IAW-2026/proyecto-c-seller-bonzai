@@ -26,6 +26,13 @@ export async function PATCH(
       return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "Order not found." }, { status: 404 });
     }
 
+    if (order.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "INVALID_STATUS", message: "Only pending orders can have their status changed." },
+        { status: 409 }
+      );
+    }
+
     const updateData: Record<string, unknown> = { status: status as OrderStatus };
     if (status === "PAID") updateData.paidAt = new Date();
     if (status === "AWAITING_TRACKING") updateData.awaitingTrackingAt = new Date();

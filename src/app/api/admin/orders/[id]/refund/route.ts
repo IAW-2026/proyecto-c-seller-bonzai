@@ -23,8 +23,11 @@ export async function POST(
       return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "Order not found." }, { status: 404 });
     }
 
-    if (order.status === "CANCELLED") {
-      return NextResponse.json({ error: "ALREADY_CANCELLED", message: "Order is already cancelled." }, { status: 409 });
+    if (order.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "INVALID_STATUS", message: "Only pending orders can be refunded." },
+        { status: 409 }
+      );
     }
 
     await prisma.$transaction(async (tx) => {
