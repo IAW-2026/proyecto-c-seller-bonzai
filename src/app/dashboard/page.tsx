@@ -23,10 +23,10 @@ export default async function DashboardPage() {
 
   const [products, orders] = await Promise.all([
     prisma.product.findMany({
-      where: { sellerId: profile.id, isActive: true },
+      where: { sellerId: profile.clerkId, isActive: true },
     }),
     prisma.order.findMany({
-      where: { sellerId: profile.id },
+      where: { sellerId: profile.clerkId },
     }),
   ]);
 
