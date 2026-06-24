@@ -156,8 +156,8 @@ export async function DELETE(
     if (order.sellerId !== sellerId) {
       return NextResponse.json({ error: "FORBIDDEN", message: "Not your order." }, { status: 403 });
     }
-    if (order.status !== "PENDING" && order.status !== "PAID") {
-      return NextResponse.json({ error: "INVALID_STATUS", message: "Solo se pueden cancelar órdenes en estado PENDING o PAID." }, { status: 409 });
+    if (order.status !== "PENDING") {
+      return NextResponse.json({ error: "INVALID_STATUS", message: "Solo se pueden cancelar órdenes en estado PENDING." }, { status: 409 });
     }
 
     const result = await orderService.cancelOrder(id);

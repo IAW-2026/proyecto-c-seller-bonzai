@@ -223,8 +223,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
                   <div className={styles.tableCell}>
                     <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                       {order.status === "PAID" ? (
-                        <>
-                          <ShipButton
+                        <ShipButton
   orderId={order.id}
   transactionId={order.transactionId || ""}
   buyerId={order.buyerId}
@@ -232,8 +231,6 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
   deliveryAddress={`${order.shippingName || ""} ${order.shippingLastName || ""}, ${order.shippingAddress || ""}, ${order.shippingCity || ""}, ${order.shippingProvince || ""} ${order.shippingZip || ""}`.trim()}
   isFragile={order.items.some((i) => i.productName.toLowerCase().includes("fragil"))}
 />
-                          <CancelOrderButton orderId={order.id} iconOnly />
-                        </>
                       ) : order.status === "PENDING" ? (
                         <CancelOrderButton orderId={order.id} iconOnly />
                       ) : order.status === "AWAITING_TRACKING" ? (
