@@ -69,7 +69,7 @@ model Product {
   updatedAt        DateTime         @updatedAt
 
   category Category?      @relation(fields: [categoryId], references: [id])
-  seller   SellerProfile  @relation(fields: [sellerId], references: [id])
+  seller   SellerProfile  @relation(fields: [sellerId], references: [clerkId])
 
   @@unique([slug])
 }

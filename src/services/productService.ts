@@ -9,7 +9,7 @@ export async function createProduct(data: { name: string; description?: string; 
     description: data.description || "",
     price: data.price,
     stock: data.stock,
-    seller: { connect: { id: data.sellerId } },
+    seller: { connect: { clerkId: data.sellerId } },
     isActive: true,
     imageUrl: data.imageUrl ? await uploadImageToCloudinary(data.imageUrl) : undefined,
     isFragile: data.isFragile ?? false,

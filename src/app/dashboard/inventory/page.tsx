@@ -30,7 +30,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = { sellerId: profile.id, isActive: true };
+  const where: Record<string, unknown> = { sellerId: profile.clerkId, isActive: true };
   if (search) {
     where.name = { contains: search, mode: "insensitive" };
   }
@@ -39,7 +39,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ se
   const [products, total, allProducts] = await Promise.all([
     prisma.product.findMany({ where, orderBy: { createdAt: "desc" }, include, skip, take: limit }),
     prisma.product.count({ where }),
-    prisma.product.findMany({ where: { sellerId: profile.id, isActive: true }, orderBy: { createdAt: "desc" }, include }),
+    prisma.product.findMany({ where: { sellerId: profile.clerkId, isActive: true }, orderBy: { createdAt: "desc" }, include }),
   ]);
 
   const totalPages = Math.ceil(total / limit);

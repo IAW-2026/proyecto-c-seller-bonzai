@@ -36,11 +36,6 @@ async function getAuthenticatedProfile() {
 
 export async function getSellerId(): Promise<string> {
   const profile = await getAuthenticatedProfile();
-  return profile.id;
-}
-
-export async function getSellerClerkId(): Promise<string> {
-  const profile = await getAuthenticatedProfile();
   return profile.clerkId;
 }
 

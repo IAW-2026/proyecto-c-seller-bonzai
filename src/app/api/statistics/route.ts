@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
-import { getSellerId, getSellerClerkId } from "../../../lib/auth-helpers";
+import { getSellerId } from "../../../lib/auth-helpers";
 
 export async function GET() {
   try {
-    const [sellerId, sellerClerkId] = await Promise.all([
-      getSellerId(),
-      getSellerClerkId(),
-    ]);
+    const sellerId = await getSellerId();
 
     const [products, orders, categories] = await Promise.all([
       prisma.product.findMany({ where: { sellerId } }),
       prisma.order.findMany({
-        where: { sellerId: sellerClerkId },
+        where: { sellerId },
         include: { items: true },
         orderBy: { createdAt: "asc" },
       }),
