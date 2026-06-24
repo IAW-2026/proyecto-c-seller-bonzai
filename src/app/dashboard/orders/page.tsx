@@ -63,7 +63,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
     toEnd.setDate(toEnd.getDate() + 1);
     where.createdAt = { ...(where.createdAt as object || {}), lt: toEnd };
   }
-  const [orders, total] = await Promise.all([
+  const [orders, total, revenueAgg, pendingCount] = await Promise.all([
     prisma.order.findMany({
       where,
       select: {
@@ -92,15 +92,17 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
       take: limit,
     }),
     prisma.order.count({ where }),
+    prisma.order.aggregate({
+      where: { ...where, status: { in: ["PAID", "AWAITING_TRACKING", "SHIPPED"] } } as any,
+      _sum: { total: true },
+    }),
+    prisma.order.count({ where: { ...where, status: "PENDING" } as any }),
   ]);
 
   const totalPages = Math.ceil(total / limit);
 
-  const statsOrders = orders;
-  const totalRevenue = statsOrders
-    .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
-    .reduce((sum, o) => sum + o.total, 0);
-  const pendingOrders = statsOrders.filter((o) => o.status === "PENDING").length;
+  const totalRevenue = revenueAgg._sum.total ?? 0;
+  const pendingOrders = pendingCount;
 
   return (
     <div className={styles.page}>
@@ -138,13 +140,20 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
             <span className={styles.statLabel}>Total Orders</span>
           </div>
         </div>
-        <div className={styles.statCard}>
+        <a
+          href="https://proyecto-c-payments-bonzai.vercel.app/dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.statCard}
+          title="Click to view your wallet (Payments App)"
+          style={{ textDecoration: "none", cursor: "pointer", position: "relative" }}
+        >
           <div className={styles.statIcon}><DollarSign size={16} /></div>
           <div className={styles.statInfo}>
             <span className={styles.statValue}>${totalRevenue.toFixed(2)}</span>
             <span className={styles.statLabel}>Revenue</span>
           </div>
-        </div>
+        </a>
         <div className={styles.statCard}>
           <div className={styles.statIcon}><Clock size={16} /></div>
           <div className={styles.statInfo}>

@@ -125,7 +125,7 @@ export function OrderFilters() {
             <input
               type="date"
               value={from}
-              onChange={(e) => setFrom(e.target.value)}
+              onChange={(e) => { setFrom(e.target.value); navigate({ search, status, from: e.target.value, to }); }}
               style={{
                 width: "100%", boxSizing: "border-box", padding: "0.5rem",
                 fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)",
@@ -142,7 +142,7 @@ export function OrderFilters() {
             <input
               type="date"
               value={to}
-              onChange={(e) => setTo(e.target.value)}
+              onChange={(e) => { setTo(e.target.value); navigate({ search, status, from, to: e.target.value }); }}
               style={{
                 width: "100%", boxSizing: "border-box", padding: "0.5rem",
                 fontSize: "0.8rem", border: "1.5px solid var(--color-border)", borderRadius: "var(--radius-lg)",

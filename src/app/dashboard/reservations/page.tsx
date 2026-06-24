@@ -43,7 +43,7 @@ export default async function ReservationsPage(props: { searchParams?: Promise<{
   const { releaseExpiredReservationsInBatch } = await import("../../../repositories/reservationRepository");
   await releaseExpiredReservationsInBatch();
 
-  const productWhere: Record<string, unknown> = { sellerId: profile.id, isActive: true };
+  const productWhere: Record<string, unknown> = { sellerId: profile.clerkId, isActive: true };
   if (search) {
     productWhere.name = { contains: search, mode: "insensitive" };
   }
