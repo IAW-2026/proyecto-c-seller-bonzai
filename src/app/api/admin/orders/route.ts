@@ -44,10 +44,10 @@ export async function GET(req: NextRequest) {
 
     const sellerIds = [...new Set(orders.map((o) => o.sellerId))];
     const sellers = await prisma.sellerProfile.findMany({
-      where: { id: { in: sellerIds } },
-      select: { id: true, email: true },
+      where: { clerkId: { in: sellerIds } },
+      select: { clerkId: true, email: true },
     });
-    const sellerEmailMap = new Map(sellers.map((s) => [s.id, s.email]));
+    const sellerEmailMap = new Map(sellers.map((s) => [s.clerkId, s.email]));
 
     const ordersWithEmail = orders.map((o) => ({
       ...o,

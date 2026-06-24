@@ -25,9 +25,9 @@ export async function GET(req: NextRequest) {
     });
 
     const sellers = await prisma.sellerProfile.findMany({
-      select: { id: true, email: true },
+      select: { clerkId: true, email: true },
     });
-    const sellerEmailMap = new Map(sellers.map((s) => [s.id, s.email]));
+    const sellerEmailMap = new Map(sellers.map((s) => [s.clerkId, s.email]));
 
     const sellerMap = new Map<string, { email: string; revenue: number; orderCount: number }>();
 

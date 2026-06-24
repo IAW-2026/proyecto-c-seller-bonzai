@@ -73,7 +73,7 @@ export async function GET(req: Request) {
     const sellerRevenue = new Map<string, { email: string; revenue: number; orders: number }>();
     for (const order of orders) {
       if (order.status === "PAID" || order.status === "AWAITING_TRACKING" || order.status === "SHIPPED") {
-        const seller = sellers.find((s) => s.id === order.sellerId);
+        const seller = sellers.find((s) => s.clerkId === order.sellerId);
         const email = seller?.email || "Unknown";
         const current = sellerRevenue.get(order.sellerId) || { email, revenue: 0, orders: 0 };
         current.revenue += order.total;

@@ -24,7 +24,7 @@ export async function GET(
     }
 
     const seller = await prisma.sellerProfile.findUnique({
-      where: { id: order.sellerId },
+      where: { clerkId: order.sellerId },
       select: { email: true },
     });
 
