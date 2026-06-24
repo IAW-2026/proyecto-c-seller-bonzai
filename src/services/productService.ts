@@ -10,6 +10,7 @@ export async function createProduct(data: { name: string; description?: string; 
     price: data.price,
     stock: data.stock,
     seller: { connect: { clerkId: data.sellerId } },
+    category: data.categoryId ? { connect: { id: data.categoryId } } : undefined,
     isActive: true,
     imageUrl: data.imageUrl ? await uploadImageToCloudinary(data.imageUrl) : undefined,
     isFragile: data.isFragile ?? false,
