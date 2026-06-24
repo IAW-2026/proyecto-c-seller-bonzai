@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import * as orderService from "../../../../services/orderService";
-import { getSellerId } from "../../../../lib/auth-helpers";
+import { getSellerId, getSellerClerkId } from "../../../../lib/auth-helpers";
 import { cancelOrderSchema } from "../../../../validators/order-cancel";
 
 export async function GET(
@@ -12,10 +12,10 @@ export async function GET(
     const serviceKey = req.headers.get("x-service-key");
     const isService = serviceKey === process.env.SERVICE_API_KEY;
 
-    let sellerId: string | undefined;
+    let sellerClerkId: string | undefined;
     if (!isService) {
       try {
-        sellerId = await getSellerId();
+        sellerClerkId = await getSellerClerkId();
       } catch {
         return NextResponse.json({ error: "UNAUTHORIZED", message: "Acceso no autorizado." }, { status: 401 });
       }
@@ -32,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "La orden no existe." }, { status: 404 });
     }
 
-    if (!isService && order.sellerId !== sellerId) {
+    if (!isService && order.sellerId !== sellerClerkId) {
       return NextResponse.json({ error: "FORBIDDEN", message: "No tenés permisos sobre esta orden." }, { status: 403 });
     }
 
@@ -148,12 +148,12 @@ export async function DELETE(
     }
 
     // Seller cancelling their own order
-    const sellerId = await getSellerId();
+    const sellerClerkId = await getSellerClerkId();
     const order = await prisma.order.findUnique({ where: { id }, select: { sellerId: true, status: true } });
     if (!order) {
       return NextResponse.json({ error: "ORDER_NOT_FOUND", message: "Order not found." }, { status: 404 });
     }
-    if (order.sellerId !== sellerId) {
+    if (order.sellerId !== sellerClerkId) {
       return NextResponse.json({ error: "FORBIDDEN", message: "Not your order." }, { status: 403 });
     }
     if (order.status !== "PENDING") {

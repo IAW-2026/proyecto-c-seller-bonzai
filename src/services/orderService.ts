@@ -90,17 +90,25 @@ export async function createOrder(
     return { success: false, error: "SELLER_NOT_FOUND", message: "No existe un vendedor asociado a la orden indicada.", status: 404 };
   }
 
+  // Map internal sellerId -> clerkId
+  const internalIds = [...sellerGroups.keys()];
+  const sellerProfiles = await prisma.sellerProfile.findMany({
+    where: { id: { in: internalIds } },
+    select: { id: true, clerkId: true },
+  });
+  const clerkIdMap = new Map(sellerProfiles.map((s) => [s.id, s.clerkId]));
+
   const normalizedStatus: OrderStatus = status === "PENDING" || status === "PAID" || status === "CANCELLED" ? (status as OrderStatus) : OrderStatus.PENDING;
 
   // Create Orders inside a transaction (no Purchase yet — created at payment confirmation)
   const result = await prisma.$transaction(async (tx) => {
-    const ordersData = Array.from(sellerGroups.entries()).map(([sellerId, group]) => {
+    const ordersData = Array.from(sellerGroups.entries()).map(([internalId, group]) => {
       const total = group.items.reduce((acc, item) => acc + item.subtotal, 0);
       return {
         data: {
           id: crypto.randomUUID(),
           buyerId,
-          sellerId,
+          sellerId: clerkIdMap.get(internalId) ?? internalId,
           status: normalizedStatus,
           total,
           shippingName: shipping.shippingName,
@@ -133,11 +141,18 @@ export async function createOrder(
     return { orders: createdOrders };
   });
 
+  // Build reverse map: clerkId -> items for email sending
+  const clerkToItems = new Map<string, Prisma.OrderItemCreateManyOrderInput[]>();
+  for (const [internalId, group] of sellerGroups) {
+    const clerkId = clerkIdMap.get(internalId);
+    if (clerkId) clerkToItems.set(clerkId, group.items);
+  }
+
   // Fire-and-forget email per order
   for (const order of result.orders) {
-    const group = sellerGroups.get(order.sellerId);
-    if (group) {
-      sendNewOrderEmail(order.sellerId, order.id, buyerId, group.items.map((i) => ({
+    const items = clerkToItems.get(order.sellerId);
+    if (items) {
+      sendNewOrderEmail(order.sellerId, order.id, buyerId, items.map((i) => ({
         productName: i.productName,
         quantity: i.quantity,
         unitPrice: i.unitPrice,

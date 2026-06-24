@@ -22,26 +22,26 @@ export async function requireAdmin(): Promise<void> {
   }
 }
 
-export async function getSellerId(): Promise<string> {
+async function getAuthenticatedProfile() {
   const { userId } = await auth();
-  if (!userId) {
-    throw new Error("UNAUTHORIZED");
-  }
+  if (!userId) throw new Error("UNAUTHORIZED");
 
   const profile = await prisma.sellerProfile.findUnique({ where: { clerkId: userId } });
-  if (!profile) {
-    throw new Error("SELLER_NOT_FOUND");
-  }
+  if (!profile) throw new Error("SELLER_NOT_FOUND");
+  if (!profile.approved) throw new Error("SELLER_NOT_APPROVED");
+  if (profile.suspended) throw new Error("SELLER_SUSPENDED");
 
-  if (!profile.approved) {
-    throw new Error("SELLER_NOT_APPROVED");
-  }
+  return profile;
+}
 
-  if (profile.suspended) {
-    throw new Error("SELLER_SUSPENDED");
-  }
-
+export async function getSellerId(): Promise<string> {
+  const profile = await getAuthenticatedProfile();
   return profile.id;
+}
+
+export async function getSellerClerkId(): Promise<string> {
+  const profile = await getAuthenticatedProfile();
+  return profile.clerkId;
 }
 
 export async function requireAdminOrServiceKey(req?: Request): Promise<void> {

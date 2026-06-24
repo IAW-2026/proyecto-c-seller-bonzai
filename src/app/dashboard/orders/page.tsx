@@ -48,7 +48,7 @@ export default async function OrdersPage(props: { searchParams?: Promise<{ searc
   const limit = 10;
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = { sellerId: profile.id };
+  const where: Record<string, unknown> = { sellerId: profile.clerkId };
   if (statusFilter) {
     where.status = statusFilter;
   }
