@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PurchaseStatus {
+  COMPLETED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  AWAITING_TRACKING
+  SHIPPED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+model SellerProfile {
+  id        String         @id @default(cuid())
+  clerkId   String         @unique
+  email     String
+  approved  Boolean        @default(true)
+  suspended Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  products  Product[]
+  reviews   SellerReview[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+enum ModerationStatus {
+  ACTIVE
+  REMOVED_INAPPROPRIATE
+  REMOVED_COUNTERFEIT
+  REMOVED_OTHER
+}
+
+model Product {
+  id               String           @id @default(cuid())
+  sellerId            String
+  categoryId       String?
+  name             String
+  description      String?
+  price            Float
+  stock            Int
+  isActive         Boolean          @default(true)
+  imageUrl         String?
+  isFragile        Boolean          @default(false)
+  suspended        Boolean          @default(false)
+  moderationStatus ModerationStatus @default(ACTIVE)
+  moderationNote   String?
+  slug             String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  category Category?      @relation(fields: [categoryId], references: [id])
+  seller   SellerProfile  @relation(fields: [sellerId], references: [clerkId])
+
+  @@unique([slug])
+}
+
+model Purchase {
+  id        String         @id @default(cuid())
+  buyerId   String
+  status    PurchaseStatus @default(COMPLETED)
+  createdAt DateTime       @default(now())
+
+  orders Order[]
+
+  @@index([buyerId])
+}
+
+model Order {
+  id                  String      @id @default(cuid())
+  purchaseId          String?
+  buyerId             String
+  sellerId  String
+  status              OrderStatus
+  total               Float
+  transactionId       String?
+  trackingId          String?
+  cancellationReason  String?
+  shippingName        String?
+  shippingLastName    String?
+  shippingAddress     String?
+  shippingCity        String?
+  shippingProvince    String?
+  shippingZip         String?
+  shippingPhone       String?
+  paidAt              DateTime?
+  shippedAt           DateTime?
+  awaitingTrackingAt  DateTime?
+  cancelledAt         DateTime?
+  createdAt           DateTime    @default(now())
+
+  items   OrderItem[]
+  purchase Purchase?  @relation(fields: [purchaseId], references: [id])
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  unitPrice   Float
+  quantity    Int
+  subtotal    Float
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Reservation {
+  id        String            @id @default(cuid())
+  productId String
+  sellerId  String?
+  buyerId   String
+  quantity  Int
+  orderId   String?
+  status    ReservationStatus
+  expiresAt DateTime
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([productId])
+}
+
+model SellerReview {
+  id        String        @id @default(cuid())
+  sellerId  String        @unique
+  seller    SellerProfile @relation(fields: [sellerId], references: [id])
+  rating    Int
+  comment   String
+  createdAt DateTime      @default(now())
+}

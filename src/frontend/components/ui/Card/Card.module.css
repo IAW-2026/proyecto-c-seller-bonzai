@@ -1,0 +1,31 @@
+.card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.shadow {
+  box-shadow: none; /* Eliminamos la sombra para que parezca editorial */
+}
+
+.card:hover {
+  opacity: 0.8;
+  transform: none;
+}
+
+.title {
+  font-family: var(--font-playfair), serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--color-primary);
+  margin-top: 1.5rem;
+}
+
+.description {
+  font-family: var(--font-geist-sans);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}

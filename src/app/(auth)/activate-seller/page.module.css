@@ -1,0 +1,89 @@
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.spinnerCircle {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.description {
+  font-size: 0.8rem;
+  color: #6B7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.highlight {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.primaryAction {
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.65rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.primaryAction:hover {
+  background: black;
+}
+
+.primaryAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryAction {
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryAction:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.secondaryAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
