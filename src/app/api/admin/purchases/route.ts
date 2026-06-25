@@ -36,7 +36,22 @@ export async function GET(req: NextRequest) {
       prisma.purchase.count({ where }),
     ]);
 
-    return NextResponse.json({ purchases, total, page, limit });
+    const sellerIds = [...new Set(purchases.flatMap((p) => p.orders.map((o) => o.sellerId)))];
+    const sellers = await prisma.sellerProfile.findMany({
+      where: { clerkId: { in: sellerIds } },
+      select: { clerkId: true, email: true },
+    });
+    const sellerEmailMap = new Map(sellers.map((s) => [s.clerkId, s.email]));
+
+    const purchasesWithSellerEmail = purchases.map((p) => ({
+      ...p,
+      orders: p.orders.map((o) => ({
+        ...o,
+        sellerEmail: sellerEmailMap.get(o.sellerId) || null,
+      })),
+    }));
+
+    return NextResponse.json({ purchases: purchasesWithSellerEmail, total, page, limit });
   } catch (error: any) {
     console.error("[admin/purchases]", error);
     if (error.message === "UNAUTHORIZED") {

@@ -31,15 +31,24 @@ export async function GET(req: NextRequest) {
       where.createdAt = dateFilter;
     }
 
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
-        where,
-        include: { items: true },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
+    const [[orders, total], revenueResult] = await Promise.all([
+      Promise.all([
+        prisma.order.findMany({
+          where,
+          include: { items: true },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limit,
+        }),
+        prisma.order.count({ where }),
+      ]),
+      prisma.order.aggregate({
+        where: {
+          ...where,
+          status: { in: ["PAID", "AWAITING_TRACKING", "SHIPPED"] },
+        },
+        _sum: { total: true },
       }),
-      prisma.order.count({ where }),
     ]);
 
     const sellerIds = [...new Set(orders.map((o) => o.sellerId))];
@@ -55,9 +64,7 @@ export async function GET(req: NextRequest) {
       purchaseId: o.purchaseId,
     }));
 
-    const totalRevenue = orders
-      .filter((o) => o.status === "PAID" || o.status === "AWAITING_TRACKING" || o.status === "SHIPPED")
-      .reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = revenueResult._sum.total || 0;
 
     return NextResponse.json({ orders: ordersWithEmail, totalRevenue, total });
   } catch (error: any) {
