@@ -25,15 +25,25 @@ export async function GET(req: Request) {
     if (to) reviewDateFilter.lte = new Date(to + "T23:59:59.999Z");
     const reviewWhere = from || to ? { createdAt: reviewDateFilter } : {};
 
+    const productDateFilter: Record<string, Date> = {};
+    if (from) productDateFilter.gte = new Date(from);
+    if (to) productDateFilter.lte = new Date(to + "T23:59:59.999Z");
+    const productWhere = from || to ? { createdAt: productDateFilter } : {};
+
+    const sellerDateFilter: Record<string, Date> = {};
+    if (from) sellerDateFilter.gte = new Date(from);
+    if (to) sellerDateFilter.lte = new Date(to + "T23:59:59.999Z");
+    const sellerWhere = from || to ? { createdAt: sellerDateFilter } : {};
+
     const [products, orders, categories, sellers] = await Promise.all([
-      prisma.product.findMany(),
+      prisma.product.findMany({ where: productWhere }),
       prisma.order.findMany({
         where: orderWhere,
         include: { items: true },
         orderBy: { createdAt: "asc" },
       }),
       prisma.category.findMany(),
-      prisma.sellerProfile.findMany(),
+      prisma.sellerProfile.findMany({ where: sellerWhere }),
     ]);
 
     const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
