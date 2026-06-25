@@ -6,9 +6,29 @@ export async function GET(req: Request) {
   try {
     await requireAdminOrServiceKey(req);
 
+    const { searchParams } = new URL(req.url);
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+
+    const orderDateFilter: Record<string, Date> = {};
+    if (from) orderDateFilter.gte = new Date(from);
+    if (to) orderDateFilter.lte = new Date(to + "T23:59:59.999Z");
+    const orderWhere = from || to ? { createdAt: orderDateFilter } : {};
+
+    const reserveDateFilter: Record<string, Date> = {};
+    if (from) reserveDateFilter.gte = new Date(from);
+    if (to) reserveDateFilter.lte = new Date(to + "T23:59:59.999Z");
+    const reserveWhere = from || to ? { createdAt: reserveDateFilter } : {};
+
+    const reviewDateFilter: Record<string, Date> = {};
+    if (from) reviewDateFilter.gte = new Date(from);
+    if (to) reviewDateFilter.lte = new Date(to + "T23:59:59.999Z");
+    const reviewWhere = from || to ? { createdAt: reviewDateFilter } : {};
+
     const [products, orders, categories, sellers] = await Promise.all([
       prisma.product.findMany(),
       prisma.order.findMany({
+        where: orderWhere,
         include: { items: true },
         orderBy: { createdAt: "asc" },
       }),
@@ -117,12 +137,13 @@ export async function GET(req: Request) {
       .slice(0, 10)
       .map(([productId, data]) => ({ productId, ...data }));
 
-    const reservations = await prisma.reservation.findMany();
+    const reservations = await prisma.reservation.findMany({ where: reserveWhere });
     const totalReservations = reservations.length;
     const completedReservations = reservations.filter((r) => r.status === "COMPLETED").length;
     const reservationConversionRate = totalReservations > 0 ? Math.round((completedReservations / totalReservations) * 10000) / 100 : 0;
 
     const ratingResult = await prisma.sellerReview.aggregate({
+      where: reviewWhere,
       _avg: { rating: true },
       _count: true,
     });
